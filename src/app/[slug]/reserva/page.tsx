@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useBooking } from "@/hooks/useBooking";
+import { AuthModal } from "@/components/auth/AuthModal";
 
 export default function ReservaPage({
   params,
@@ -15,8 +16,8 @@ export default function ReservaPage({
   const barberSlug = resolvedParams.slug;
   const router = useRouter();
 
-  // Exigimos que el usuario sea un cliente para entrar aquí
-  const { user, profile, loading: authLoading } = useAuth("client");
+  // Cargamos auth pero no exigimos rol para permitir ver el formulario
+  const { user, profile, loading: authLoading } = useAuth();
   
   const {
     barber,
@@ -34,18 +35,38 @@ export default function ReservaPage({
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isPendingBooking, setIsPendingBooking] = useState(false);
 
-  // Sincronizamos el nombre del perfil con el estado local
+  // Sincronizamos el nombre si el usuario está logueado
   useEffect(() => {
     if (profile?.full_name) {
       setName(profile.full_name);
     }
   }, [profile]);
 
+  // Si había una reserva pendiente y el usuario se logueó, ejecutarla
+  useEffect(() => {
+    if (user && isPendingBooking) {
+      executeBooking();
+      setIsPendingBooking(false);
+    }
+  }, [user, isPendingBooking]);
+
   const onBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
     
+    if (!user) {
+      setIsPendingBooking(true);
+      setShowAuthModal(true);
+      return;
+    }
+
+    executeBooking();
+  };
+
+  const executeBooking = async () => {
+    if (!user) return;
     const success = await handleCreateBooking(user.id, name, phone);
     if (success) {
       setTimeout(() => {
@@ -69,17 +90,13 @@ export default function ReservaPage({
     );
   }
 
-  // Si está cargando la auth o la info de la barbería
   if (authLoading || bookingLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <p className="text-gray-500 font-medium">Cargando...</p>
+        <p className="text-gray-500 font-medium">Cargando formulario...</p>
       </div>
     );
   }
-
-  // No necesitamos un bloque if(!user) aquí porque useAuth("client") 
-  // ya redirige automáticamente a /login si no hay sesión.
 
   return (
     <main className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -108,6 +125,7 @@ export default function ReservaPage({
               required
               value={name}
               onChange={(e) => setName(e.target.value)}
+              placeholder="¿A quién anotamos?"
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
             />
           </div>
@@ -121,6 +139,7 @@ export default function ReservaPage({
               required
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
+              placeholder="Para enviarte recordatorios"
               className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
             />
           </div>
@@ -173,7 +192,7 @@ export default function ReservaPage({
             disabled={actionLoading || !selectedDate || !selectedTime}
             className="mt-4 w-full rounded-md bg-black px-4 py-2 font-medium text-white hover:bg-gray-800 disabled:bg-gray-400"
           >
-            {actionLoading ? "Reservando..." : "Confirmar Reserva"}
+            {actionLoading ? "Procesando..." : "Confirmar Reserva"}
           </button>
         </form>
         {message && (
@@ -184,6 +203,12 @@ export default function ReservaPage({
           </p>
         )}
       </div>
+
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={() => setShowAuthModal(false)}
+      />
     </main>
   );
 }

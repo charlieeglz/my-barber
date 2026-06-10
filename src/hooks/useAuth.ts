@@ -26,22 +26,27 @@ export function useAuth(requiredRole?: UserRole) {
           return;
         }
 
-        setUser(session.user);
+        const sessionUser = session.user;
+        setUser(sessionUser);
 
-        // Fetch additional profile data from our 'users' table if needed
-        const { data: userData, error: userError } = await supabase
+        // Intentamos obtener el perfil de la tabla pública 'users'
+        const { data: userData } = await supabase
           .from("users")
           .select("full_name, role")
-          .eq("id", session.user.id)
+          .eq("id", sessionUser.id)
           .single();
 
-        if (!userError && userData) {
-          const userRole = userData.role as UserRole;
-          setProfile({ full_name: userData.full_name, role: userRole });
+        // Si no hay datos en la tabla (ej: registro reciente sin trigger), 
+        // usamos los metadatos de Auth como fuente de verdad.
+        const finalFullName = userData?.full_name || sessionUser.user_metadata?.full_name || "";
+        const finalRole = (userData?.role || sessionUser.user_metadata?.role) as UserRole;
 
-          // Redirect if role doesn't match
-          if (requiredRole && userRole !== requiredRole) {
-            const redirectPath = userRole === "barber" ? "/dashboard" : "/cliente";
+        if (finalRole) {
+          setProfile({ full_name: finalFullName, role: finalRole });
+
+          // Redirección solo si el rol no coincide con el requerido
+          if (requiredRole && finalRole !== requiredRole) {
+            const redirectPath = finalRole === "barber" ? "/dashboard" : "/cliente";
             router.push(redirectPath);
           }
         }
