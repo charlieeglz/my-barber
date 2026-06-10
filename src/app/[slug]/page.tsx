@@ -166,7 +166,7 @@ export default function BarberProfile({
                     Inicia sesión para poder realizar una reserva.
                   </p>
                   <Link
-                    href={`/login?next=/${barberSlug}`}
+                    href={`/login?next=/${barberSlug}/reserva`}
                     className="block w-full rounded-xl bg-black px-4 py-4 text-center font-bold text-white transition-all hover:bg-gray-800 hover:shadow-lg active:scale-95"
                   >
                     Acceder ahora
