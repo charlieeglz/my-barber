@@ -16,9 +16,16 @@ export const authService = {
       password,
       options: {
         data: { full_name: fullName, role: role },
+        emailRedirectTo: `${window.location.origin}/login?confirmed=true`,
       },
     });
-    if (error) throw error;
+    
+    if (error) {
+      if (error.message.includes("already registered") || error.status === 400) {
+        throw new Error("Esta cuenta ya está registrada. Por favor, inicia sesión.");
+      }
+      throw error;
+    }
     return data;
   },
 

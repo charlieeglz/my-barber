@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 function LoginContent() {
   const searchParams = useSearchParams();
   const nextParam = searchParams.get("next");
+  const isConfirmed = searchParams.get("confirmed");
   const router = useRouter();
   const { user, profile, loading: authLoading } = useAuth();
 
@@ -17,29 +18,39 @@ function LoginContent() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
+
+  // Success message if coming from email confirmation
+  useEffect(() => {
+    if (isConfirmed) {
+      setSuccess("¡Email confirmado con éxito! Ahora puedes iniciar sesión.");
+    }
+  }, [isConfirmed]);
 
   // Redirect if already logged in
   useEffect(() => {
-    if (!authLoading && user && profile) {
+    if (!authLoading && user && profile && !isConfirmed) {
       const redirectPath = profile.role === "barber" ? "/dashboard" : nextParam || "/cliente";
       router.push(redirectPath);
     }
-  }, [user, profile, authLoading, nextParam, router]);
+  }, [user, profile, authLoading, nextParam, router, isConfirmed]);
 
   async function handleEmailAuth(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setSuccess("");
     setLoading(true);
 
     try {
       if (isLogin) {
         await authService.signIn(email, password);
-        // The redirection will be handled by the useEffect or manually here
+        // We wait for the next render for useAuth to pick it up or push manually
         router.push(role === "barber" ? "/dashboard" : nextParam || "/cliente");
       } else {
         await authService.signUp(email, password, name, role);
-        router.push(role === "barber" ? "/dashboard" : nextParam || "/cliente");
+        setSuccess("Registro casi completado. Por favor, revisa tu email para confirmar tu cuenta.");
+        setIsLogin(true); // Switch to login view so they can enter after confirmation
       }
     } catch (err: any) {
       setError(err.message || "Error de autenticación");
@@ -55,6 +66,12 @@ function LoginContent() {
       <h1 className="mb-6 text-center text-2xl font-bold text-gray-900">
         {isLogin ? "Acceso a la plataforma" : "Crear nueva cuenta"}
       </h1>
+
+      {success && (
+        <div className="mb-4 rounded-lg bg-green-50 p-3 text-center text-sm font-medium text-green-700">
+          {success}
+        </div>
+      )}
 
       <div className="mb-6 flex rounded-lg bg-gray-100 p-1">
         <button
