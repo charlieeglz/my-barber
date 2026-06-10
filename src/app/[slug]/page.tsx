@@ -1,10 +1,12 @@
 "use client";
 
-import { use } from "react";
+import { use, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useBooking } from "@/hooks/useBooking";
 import { useAuth } from "@/hooks/useAuth";
+import { AuthModal } from "@/components/auth/AuthModal";
 
 export default function BarberProfile({
   params,
@@ -13,6 +15,7 @@ export default function BarberProfile({
 }) {
   const resolvedParams = use(params);
   const barberSlug = resolvedParams.slug;
+  const router = useRouter();
 
   const {
     barber,
@@ -22,6 +25,16 @@ export default function BarberProfile({
   } = useBooking(barberSlug);
 
   const { user } = useAuth();
+  const [showAuthModal, setShowAuthModal] = useState(false);
+
+  const handleReserveClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    if (!user) {
+      setShowAuthModal(true);
+    } else {
+      router.push(`/${barberSlug}/reserva`);
+    }
+  };
 
   if (notFound) {
     return (
@@ -160,12 +173,12 @@ export default function BarberProfile({
                 Asegura tu hueco con nosotros de forma rápida y sencilla.
               </p>
               <div className="text-center">
-                <Link
-                  href={`/${barberSlug}/reserva`}
+                <button
+                  onClick={handleReserveClick}
                   className="block w-full rounded-xl bg-black px-4 py-4 text-center font-bold text-white transition-all hover:bg-gray-800 hover:shadow-lg active:scale-95"
                 >
                   Reservar Cita
-                </Link>
+                </button>
               </div>
 
               <div className="mt-6 border-t border-gray-50 pt-6">
@@ -186,6 +199,12 @@ export default function BarberProfile({
           </div>
         </div>
       </div>
+
+      <AuthModal 
+        isOpen={showAuthModal} 
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={() => router.push(`/${barberSlug}/reserva`)}
+      />
     </main>
   );
 }
