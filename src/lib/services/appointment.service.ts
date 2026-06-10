@@ -8,16 +8,21 @@ export type Appointment = {
   customer_phone: string;
   appointment_date: string;
   status: AppointmentStatus;
-  barber_id: string;
+  barber_id: string; // ID de la Barbería (Barbershop)
+  staff_id: string;  // ID del Peluquero específico
   client_id?: string;
   created_at?: string;
-  barbers?: {
+  barbershops?: {
     full_name: string;
+  };
+  staff?: {
+    name: string;
   };
 };
 
 export type CreateAppointmentData = {
   barber_id: string;
+  staff_id: string;
   client_id: string;
   customer_name: string;
   customer_phone: string;
@@ -26,11 +31,24 @@ export type CreateAppointmentData = {
 };
 
 export const appointmentService = {
-  async getByBarber(barberId: string) {
+  // Obtener todas las citas de una barbería (para el dueño)
+  async getByBarbershop(barbershopId: string) {
+    const { data, error } = await supabase
+      .from("appointments")
+      .select("*, staff(name)")
+      .eq("barber_id", barbershopId)
+      .order("appointment_date", { ascending: true });
+
+    if (error) throw error;
+    return data as Appointment[];
+  },
+
+  // Obtener citas de un barbero específico
+  async getByStaff(staffId: string) {
     const { data, error } = await supabase
       .from("appointments")
       .select("*")
-      .eq("barber_id", barberId)
+      .eq("staff_id", staffId)
       .order("appointment_date", { ascending: true });
 
     if (error) throw error;
@@ -42,8 +60,11 @@ export const appointmentService = {
       .from("appointments")
       .select(`
         *,
-        barbers (
+        barbershops (
           full_name
+        ),
+        staff (
+          name
         )
       `)
       .eq("client_id", clientId)
@@ -53,14 +74,15 @@ export const appointmentService = {
     return data as Appointment[];
   },
 
-  async getBookedTimes(barberId: string, date: string) {
+  // Importante: Ahora buscamos horas ocupadas por MIEMBRO DEL STAFF
+  async getBookedTimes(staffId: string, date: string) {
     const startOfDay = new Date(`${date}T00:00:00`).toISOString();
     const endOfDay = new Date(`${date}T23:59:59`).toISOString();
 
     const { data, error } = await supabase
       .from("appointments")
       .select("appointment_date")
-      .eq("barber_id", barberId)
+      .eq("staff_id", staffId)
       .gte("appointment_date", startOfDay)
       .lte("appointment_date", endOfDay)
       .eq("status", "pending");

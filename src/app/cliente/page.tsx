@@ -106,8 +106,13 @@ export default function ClienteDashboard() {
                     🕒 {dateUtils.formatFriendlyTime(apt.appointment_date)}
                   </p>
                   <p className="text-sm font-medium text-gray-600">
-                    📍 {apt.barbers?.full_name || "Barbería"}
+                    📍 {apt.barbershops?.full_name || "Barbería"}
                   </p>
+                  {apt.staff?.name && (
+                    <p className="text-xs font-bold text-gray-400 mt-1">
+                      👤 {apt.staff.name}
+                    </p>
+                  )}
                 </div>
 
                 {apt.status !== "completed" && (

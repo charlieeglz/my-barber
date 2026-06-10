@@ -20,7 +20,7 @@ export default function DirectoryPage() {
   useEffect(() => {
     async function loadBarbers() {
       const { data } = await supabase
-        .from("barbers")
+        .from("barbershops")
         .select("id, slug, full_name, avatar_url");
 
       if (data) {

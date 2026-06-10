@@ -32,6 +32,11 @@ export function AppointmentCard({ appointment, onPhotoUpload, isUploading }: App
           🕒{" "}
           {dateUtils.formatFriendlyTime(appointment.appointment_date)}
         </p>
+        {appointment.staff?.name && (
+          <p className="mt-2 text-xs font-bold text-gray-400 uppercase tracking-tight">
+            👤 Barbero: {appointment.staff.name}
+          </p>
+        )}
       </div>
 
       <div className="mt-auto border-t border-gray-50 pt-4">

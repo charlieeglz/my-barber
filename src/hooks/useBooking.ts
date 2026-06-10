@@ -1,60 +1,75 @@
 import { useState, useEffect } from "react";
-import { barberService, BarberProfile } from "../lib/services/barber.service";
+import { barberService, Barbershop, StaffMember } from "../lib/services/barber.service";
 import { appointmentService } from "../lib/services/appointment.service";
 import { dateUtils } from "../lib/utils/date-utils";
 
 export function useBooking(barberSlug: string) {
-  const [barber, setBarber] = useState<BarberProfile | null>(null);
+  const [barber, setBarber] = useState<Barbershop | null>(null);
+  const [staff, setStaff] = useState<StaffMember[]>([]);
   const [photos, setPhotos] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
+  // Estados de la reserva
+  const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [bookedTimes, setBookedTimes] = useState<string[]>([]);
   const [bookingLoading, setBookingLoading] = useState(false);
   const [message, setMessage] = useState("");
 
+  // 1. Cargar información de la barbería y su equipo
   useEffect(() => {
-    async function loadBarber() {
+    async function loadBarberData() {
       try {
-        const data = await barberService.getBySlug(barberSlug);
-        setBarber(data);
+        const barbershop = await barberService.getBySlug(barberSlug);
+        setBarber(barbershop);
         
-        const photosData = await barberService.getPortfolioPhotos(data.id);
+        const [staffData, photosData] = await Promise.all([
+          barberService.getStaffByBarbershop(barbershop.id),
+          barberService.getPortfolioPhotos(barbershop.id)
+        ]);
+
+        setStaff(staffData);
         setPhotos(photosData || []);
+        
+        // Seleccionar automáticamente al primer barbero por defecto
+        if (staffData.length > 0) {
+          setSelectedStaff(staffData[0]);
+        }
       } catch (error) {
-        console.error("Error loading barber:", error);
+        console.error("Error loading barber data:", error);
         setNotFound(true);
       } finally {
         setLoading(false);
       }
     }
-    loadBarber();
+    loadBarberData();
   }, [barberSlug]);
 
+  // 2. Cargar horarios ocupados cuando cambie el barbero o la fecha
   useEffect(() => {
     async function loadBookedTimes() {
-      if (!selectedDate || !barber) {
+      if (!selectedDate || !selectedStaff) {
         setBookedTimes([]);
         return;
       }
       try {
-        const times = await appointmentService.getBookedTimes(barber.id, selectedDate);
+        const times = await appointmentService.getBookedTimes(selectedStaff.id, selectedDate);
         setBookedTimes(times);
       } catch (error) {
         console.error("Error loading booked times:", error);
       }
     }
     loadBookedTimes();
-  }, [selectedDate, barber]);
+  }, [selectedDate, selectedStaff]);
 
   const handleCreateBooking = async (
     userId: string,
     customerName: string,
     customerPhone: string
   ) => {
-    if (!barber || !userId || !selectedDate || !selectedTime) {
+    if (!barber || !selectedStaff || !userId || !selectedDate || !selectedTime) {
       setMessage("Faltan datos para la reserva.");
       return false;
     }
@@ -67,6 +82,7 @@ export function useBooking(barberSlug: string) {
       
       await appointmentService.create({
         barber_id: barber.id,
+        staff_id: selectedStaff.id,
         client_id: userId,
         customer_name: customerName,
         customer_phone: customerPhone,
@@ -92,9 +108,12 @@ export function useBooking(barberSlug: string) {
 
   return {
     barber,
+    staff,
     photos,
     loading,
     notFound,
+    selectedStaff,
+    setSelectedStaff,
     selectedDate,
     setSelectedDate,
     selectedTime,

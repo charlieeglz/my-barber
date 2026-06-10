@@ -14,6 +14,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -28,7 +29,7 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
       if (isLogin) {
         await authService.signIn(email, password);
       } else {
-        await authService.signUp(email, password, name, "client");
+        await authService.signUp(email, password, name, "client", phone);
       }
       onSuccess();
     } catch (err: any) {

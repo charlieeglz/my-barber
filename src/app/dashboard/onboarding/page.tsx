@@ -99,7 +99,7 @@ export default function OnboardingPage() {
         (s) => s.name.trim() !== "" && s.price.trim() !== ""
       );
 
-      await barberService.createProfile({
+      const barbershop = await barberService.createProfile({
         user_id: user.id,
         name: fullName,
         full_name: fullName,
@@ -108,6 +108,15 @@ export default function OnboardingPage() {
         avatar_url: avatarUrl,
         cover_url: coverUrl,
         services: filteredServices,
+      });
+
+      // Crear al dueño como primer miembro del staff
+      await barberService.addStaffMember({
+        barbershop_id: barbershop.id,
+        user_id: user.id,
+        name: profile?.full_name || fullName,
+        avatar_url: avatarUrl,
+        role: "owner",
       });
 
       router.push("/dashboard");

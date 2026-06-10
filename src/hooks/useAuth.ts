@@ -2,12 +2,18 @@ import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "next/navigation";
 import { User } from "@supabase/supabase-js";
+import { StaffMember, Barbershop } from "@/lib/services/barber.service";
 
 export type UserRole = "barber" | "client";
 
 export function useAuth(requiredRole?: UserRole) {
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<{ full_name: string; role: UserRole } | null>(null);
+  const [profile, setProfile] = useState<{ 
+    full_name: string; 
+    role: UserRole;
+    phone?: string;
+    staffInfo?: StaffMember & { barbershops: Barbershop }
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -29,22 +35,41 @@ export function useAuth(requiredRole?: UserRole) {
         const sessionUser = session.user;
         setUser(sessionUser);
 
-        // Intentamos obtener el perfil de la tabla pública 'users'
+        // 1. Intentamos obtener el perfil de la tabla pública 'users'
         const { data: userData } = await supabase
           .from("users")
-          .select("full_name, role")
+          .select("full_name, role, phone")
           .eq("id", sessionUser.id)
           .single();
 
-        // Si no hay datos en la tabla (ej: registro reciente sin trigger), 
-        // usamos los metadatos de Auth como fuente de verdad.
-        const finalFullName = userData?.full_name || sessionUser.user_metadata?.full_name || "";
+        // 2. Si el rol es 'barber', buscamos su asociación en la tabla 'staff'
+        let staffInfo = null;
         const finalRole = (userData?.role || sessionUser.user_metadata?.role) as UserRole;
 
-        if (finalRole) {
-          setProfile({ full_name: finalFullName, role: finalRole });
+        if (finalRole === "barber") {
+          const { data: staffData } = await supabase
+            .from("staff")
+            .select("*, barbershops(*)")
+            .eq("user_id", sessionUser.id)
+            .single();
+          
+          if (staffData) {
+            staffInfo = staffData as (StaffMember & { barbershops: Barbershop });
+          }
+        }
 
-          // Redirección solo si el rol no coincide con el requerido
+        const finalFullName = userData?.full_name || sessionUser.user_metadata?.full_name || "";
+        const finalPhone = userData?.phone || sessionUser.user_metadata?.phone || "";
+
+        if (finalRole) {
+          setProfile({ 
+            full_name: finalFullName, 
+            role: finalRole,
+            phone: finalPhone,
+            staffInfo
+          });
+
+          // Redirección si el rol no coincide con el requerido
           if (requiredRole && finalRole !== requiredRole) {
             const redirectPath = finalRole === "barber" ? "/dashboard" : "/cliente";
             router.push(redirectPath);
