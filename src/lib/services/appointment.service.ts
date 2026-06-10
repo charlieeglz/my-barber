@@ -63,7 +63,7 @@ export const appointmentService = {
       .eq("barber_id", barberId)
       .gte("appointment_date", startOfDay)
       .lte("appointment_date", endOfDay)
-      .neq("status", "completed");
+      .eq("status", "pending");
 
     if (error) throw error;
     
