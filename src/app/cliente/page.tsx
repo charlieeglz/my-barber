@@ -61,7 +61,7 @@ export default function ClienteDashboard() {
           </h1>
           <div className="flex gap-4">
             <Link
-              href="/"
+              href="/explorar"
               className="rounded text-sm font-medium text-blue-600 hover:underline"
             >
               Buscar Barberías

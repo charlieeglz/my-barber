@@ -82,8 +82,8 @@ export default function ReservaPage({
           <h1 className="text-2xl font-bold text-gray-900">
             Barbería no encontrada
           </h1>
-          <Link href="/" className="mt-4 block text-blue-600 hover:underline">
-            Volver al inicio
+          <Link href="/explorar" className="mt-4 block text-blue-600 hover:underline">
+            Volver al listado
           </Link>
         </div>
       </div>

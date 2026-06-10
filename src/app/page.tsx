@@ -1,117 +1,61 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { supabase } from "../lib/supabase";
 import Link from "next/link";
-import Image from "next/image";
+import { useAuth } from "@/hooks/useAuth";
 
-type Barber = {
-  id: string;
-  slug: string;
-  full_name: string;
-  avatar_url: string | null;
-};
-
-export default function DirectoryPage() {
-  const [barbers, setBarbers] = useState<Barber[]>([]);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadBarbers() {
-      const { data } = await supabase
-        .from("barbers")
-        .select("id, slug, full_name, avatar_url");
-
-      if (data) {
-        setBarbers(data);
-      }
-      setLoading(false);
-    }
-    loadBarbers();
-  }, []);
-
-  const filteredBarbers = barbers.filter((barber) => {
-    const name = barber.full_name?.toLowerCase() || "";
-    const slug = barber.slug?.toLowerCase() || "";
-    const search = searchTerm.toLowerCase();
-    return name.includes(search) || slug.includes(search);
-  });
+export default function WelcomePage() {
+  const { user, profile } = useAuth();
 
   return (
-    <main className="min-h-screen bg-gray-50 p-4 md:p-8">
-      <div className="mx-auto max-w-5xl">
-        <div className="mb-12 text-center">
-          <h1 className="mb-4 text-3xl font-extrabold text-gray-900 md:text-5xl">
-            Encuentra tu estilo
-          </h1>
-          <p className="mb-8 text-lg text-gray-600">
-            Explora las mejores barberías y reserva tu cita en segundos.
-          </p>
+    <main className="flex min-h-screen flex-col items-center justify-center bg-gray-50 p-6">
+      <div className="w-full max-w-4xl text-center">
+        <h1 className="mb-6 text-4xl font-extrabold tracking-tight text-gray-900 md:text-6xl">
+          Bienvenido a <span className="text-black underline decoration-gray-300">BarberApp</span>
+        </h1>
+        <p className="mb-12 text-lg text-gray-600 md:text-xl">
+          La plataforma definitiva para gestionar tus citas y encontrar a los mejores profesionales.
+        </p>
 
-          {/* Buscador */}
-          <div className="relative mx-auto max-w-xl">
-            <input
-              type="text"
-              placeholder="Buscar por nombre o ciudad..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-2xl border border-gray-200 bg-white px-6 py-4 text-lg shadow-sm transition-all focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-            />
-            <span className="absolute right-6 top-1/2 -translate-y-1/2 text-xl grayscale opacity-50">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+          {/* Opción 1: Cliente */}
+          <Link
+            href="/explorar"
+            className="group flex flex-col items-center rounded-3xl border border-gray-100 bg-white p-10 shadow-sm transition-all hover:-translate-y-2 hover:border-black hover:shadow-2xl"
+          >
+            <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gray-100 text-4xl transition-colors group-hover:bg-black group-hover:text-white">
               🔍
+            </div>
+            <h2 className="mb-4 text-2xl font-bold text-gray-900">Busco una Barbería</h2>
+            <p className="text-gray-500">
+              Explora el directorio, mira trabajos reales y reserva tu próxima cita en segundos.
+            </p>
+            <span className="mt-8 inline-flex items-center font-bold text-black group-hover:underline">
+              Explorar ahora →
             </span>
-          </div>
+          </Link>
+
+          {/* Opción 2: Barbero */}
+          <Link
+            href={user && profile?.role === "barber" ? "/dashboard" : "/login"}
+            className="group flex flex-col items-center rounded-3xl border border-gray-100 bg-white p-10 shadow-sm transition-all hover:-translate-y-2 hover:border-black hover:shadow-2xl"
+          >
+            <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-2xl bg-gray-100 text-4xl transition-colors group-hover:bg-black group-hover:text-white">
+              💈
+            </div>
+            <h2 className="mb-4 text-2xl font-bold text-gray-900">Soy una Barbería</h2>
+            <p className="text-gray-500">
+              Gestiona tu agenda, muestra tu portfolio y haz crecer tu negocio con nosotros.
+            </p>
+            <span className="mt-8 inline-flex items-center font-bold text-black group-hover:underline">
+              Entrar al Panel →
+            </span>
+          </Link>
         </div>
 
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-black"></div>
-            <p className="mt-4 font-medium text-gray-500">Buscando barberías...</p>
-          </div>
-        ) : filteredBarbers.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-gray-200 bg-white p-20 text-center shadow-sm">
-            <p className="text-xl font-medium text-gray-400">
-              {searchTerm 
-                ? `No hemos encontrado ninguna barbería que coincida con "${searchTerm}"`
-                : "Aún no hay barberías registradas en la plataforma."}
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredBarbers.map((barber) => (
-              <Link
-                key={barber.id}
-                href={`/${barber.slug}`}
-                className="group flex flex-col items-center justify-center rounded-3xl border border-gray-100 bg-white p-8 shadow-sm transition-all hover:-translate-y-1 hover:border-black hover:shadow-xl"
-              >
-                <div className="relative mb-6 h-24 w-24 overflow-hidden rounded-2xl bg-gray-100 shadow-inner group-hover:shadow-md">
-                  {barber.avatar_url ? (
-                    <Image
-                      src={barber.avatar_url}
-                      alt={barber.full_name}
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center text-3xl font-bold text-gray-300">
-                      {barber.full_name?.charAt(0) || "B"}
-                    </div>
-                  )}
-                </div>
-                
-                <h2 className="text-xl font-bold capitalize text-gray-900 group-hover:text-black">
-                  {barber.full_name}
-                </h2>
-                
-                <div className="mt-6 rounded-xl bg-gray-50 px-5 py-2 text-sm font-bold text-gray-600 transition-colors group-hover:bg-black group-hover:text-white">
-                  Ver perfil
-                </div>
-              </Link>
-            ))}
-          </div>
-        )}
+        {/* Footer simple */}
+        <div className="mt-16 text-sm text-gray-400">
+          © 2026 BarberApp. Todos los derechos reservados.
+        </div>
       </div>
     </main>
   );
