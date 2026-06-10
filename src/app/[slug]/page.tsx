@@ -159,27 +159,14 @@ export default function BarberProfile({
               <p className="mb-6 text-sm text-gray-600">
                 Asegura tu hueco con nosotros de forma rápida y sencilla.
               </p>
-              
-              {!user ? (
-                <div className="space-y-4">
-                  <p className="text-sm font-medium text-gray-800 bg-gray-50 p-3 rounded-lg border border-gray-100">
-                    Inicia sesión para poder realizar una reserva.
-                  </p>
-                  <Link
-                    href={`/login?next=/${barberSlug}/reserva`}
-                    className="block w-full rounded-xl bg-black px-4 py-4 text-center font-bold text-white transition-all hover:bg-gray-800 hover:shadow-lg active:scale-95"
-                  >
-                    Acceder ahora
-                  </Link>
-                </div>
-              ) : (
+              <div className="text-center">
                 <Link
                   href={`/${barberSlug}/reserva`}
                   className="block w-full rounded-xl bg-black px-4 py-4 text-center font-bold text-white transition-all hover:bg-gray-800 hover:shadow-lg active:scale-95"
                 >
-                  Continuar a la reserva
+                  Reservar Cita
                 </Link>
-              )}
+              </div>
 
               <div className="mt-6 border-t border-gray-50 pt-6">
                 <div className="flex items-center gap-3 text-sm text-gray-600">
