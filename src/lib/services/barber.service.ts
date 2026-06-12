@@ -130,6 +130,18 @@ export const barberService = {
     return data as StaffMember;
   },
 
+  async updateStaffMember(id: string, updates: Partial<StaffMember>) {
+    const { data, error } = await supabase
+      .from("staff")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data as StaffMember;
+  },
+
   // --- PORTFOLIO ---
 
   async getPortfolioPhotos(barberId: string, staffId?: string) {
