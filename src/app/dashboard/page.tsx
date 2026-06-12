@@ -122,6 +122,23 @@ export default function Dashboard() {
           </div>
           <div className="flex flex-wrap items-center gap-4">
             {isOwner && (
+              <Link
+                href={`/${barber?.slug}`}
+                target="_blank"
+                className="group flex items-center gap-2 rounded-xl border border-border bg-secondary/50 px-6 py-2.5 text-sm font-bold text-foreground transition-all hover:border-primary/50 hover:bg-secondary"
+              >
+                <EyeIcon className="h-4 w-4 text-primary" />
+                Ver como Cliente
+              </Link>
+            )}
+            <Link
+              href="/dashboard/perfil"
+              className="group flex items-center gap-2 rounded-xl border border-border bg-secondary/50 px-6 py-2.5 text-sm font-bold text-foreground transition-all hover:border-primary/50 hover:bg-secondary"
+            >
+              <ProfileIcon className="h-4 w-4 text-primary" />
+              Editar Perfil
+            </Link>
+            {isOwner && (
                <Link
                 href="/dashboard/equipo"
                 className="group flex items-center gap-2 rounded-xl border border-border bg-secondary/50 px-6 py-2.5 text-sm font-bold text-foreground transition-all hover:border-primary/50 hover:bg-secondary"
