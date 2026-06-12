@@ -97,10 +97,14 @@ export default function EditProfilePage() {
         personalAvatarUrl = await storageService.uploadImage(personalAvatarFile, "portfolio", path);
       }
 
-      await barberService.updateStaffMember(profile.staffInfo.id, {
-        name: personalName,
-        avatar_url: personalAvatarUrl,
-      });
+      try {
+        await barberService.updateStaffMember(profile.staffInfo.id, {
+          name: personalName,
+          avatar_url: personalAvatarUrl,
+        });
+      } catch (err: any) {
+        throw new Error(`Error al actualizar información personal: ${err.message}`);
+      }
 
       // 2. Update Barbershop Info (If owner)
       if (isOwner && barberData) {
@@ -128,16 +132,20 @@ export default function EditProfilePage() {
           (s) => s.name.trim() !== "" && s.price.trim() !== ""
         );
 
-        await barberService.updateBarbershop(barberData.id, {
-          name: barbershopName,
-          full_name: barbershopName,
-          slug: formattedSlug,
-          num_barbers: parseInt(numBarbers) || 1,
-          avatar_url: personalAvatarUrl, // Sync barbershop avatar with owner's avatar
-          cover_url: coverUrl,
-          location,
-          services: filteredServices,
-        });
+        try {
+          await barberService.updateBarbershop(barberData.id, {
+            name: barbershopName,
+            full_name: barbershopName,
+            slug: formattedSlug,
+            num_barbers: parseInt(numBarbers) || 1,
+            avatar_url: personalAvatarUrl, // Sync barbershop avatar with owner's avatar
+            cover_url: coverUrl,
+            location,
+            services: filteredServices,
+          });
+        } catch (err: any) {
+          throw new Error(`Error al actualizar información de la barbería: ${err.message}`);
+        }
       }
 
       setSuccess(true);
