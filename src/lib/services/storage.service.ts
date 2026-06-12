@@ -14,9 +14,7 @@ export const storageService = {
       
       const { data, error: uploadError } = await supabase.storage
         .from(bucket)
-        .upload(path, compressedFile, {
-          upsert: true
-        });
+        .upload(path, compressedFile);
 
       if (uploadError) throw uploadError;
 

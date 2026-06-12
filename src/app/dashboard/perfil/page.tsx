@@ -93,8 +93,12 @@ export default function EditProfilePage() {
       // 1. Update Personal Info (Staff record)
       let personalAvatarUrl = profile.staffInfo.avatar_url;
       if (personalAvatarFile) {
-        const path = `${user.id}/staff/${storageService.generateFileName("avatar", personalAvatarFile)}`;
-        personalAvatarUrl = await storageService.uploadImage(personalAvatarFile, "portfolio", path);
+        try {
+          const path = `${user.id}/staff/${storageService.generateFileName("avatar", personalAvatarFile)}`;
+          personalAvatarUrl = await storageService.uploadImage(personalAvatarFile, "portfolio", path);
+        } catch (err: any) {
+          throw new Error(`Error al subir foto de perfil: ${err.message}`);
+        }
       }
 
       try {
@@ -124,8 +128,12 @@ export default function EditProfilePage() {
 
         let coverUrl = barberData.cover_url;
         if (coverFile) {
-          const path = `${user.id}/${storageService.generateFileName("cover", coverFile)}`;
-          coverUrl = await storageService.uploadImage(coverFile, "portfolio", path);
+          try {
+            const path = `${user.id}/${storageService.generateFileName("cover", coverFile)}`;
+            coverUrl = await storageService.uploadImage(coverFile, "portfolio", path);
+          } catch (err: any) {
+            throw new Error(`Error al subir foto de portada: ${err.message}`);
+          }
         }
 
         const filteredServices = services.filter(
