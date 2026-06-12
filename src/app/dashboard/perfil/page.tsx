@@ -3,16 +3,16 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { barberService } from "@/lib/services/barber.service";
+import { barberService, Barbershop } from "@/lib/services/barber.service";
 import { storageService } from "@/lib/services/storage.service";
-import Link from "next/link";
+import Link from "next/navigation";
 
 type ServiceInput = {
   name: string;
   price: string;
 };
 
-export default function OnboardingPage() {
+export default function EditProfilePage() {
   const { user, profile, loading: authLoading } = useAuth("barber");
   const router = useRouter();
 
@@ -26,28 +26,34 @@ export default function OnboardingPage() {
     { name: "", price: "" },
   ]);
 
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [barber, setBarber] = useState<Barbershop | null>(null);
 
   useEffect(() => {
-    if (profile?.full_name) {
-      setFullName(profile.full_name);
-    }
-  }, [profile]);
-
-  useEffect(() => {
-    async function checkProfile() {
-      if (user) {
-        const existing = await barberService.getByUserId(user.id);
-        if (existing) {
-          router.push("/dashboard");
+    async function loadBarberData() {
+      if (!user) return;
+      try {
+        const data = await barberService.getByUserId(user.id);
+        if (data) {
+          setBarber(data);
+          setFullName(data.full_name);
+          setSlug(data.slug);
+          setLocation(data.location || "");
+          setNumBarbers(data.num_barbers.toString());
+          setServices(data.services.length > 0 ? data.services : [{ name: "", price: "" }]);
         }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
       }
     }
     if (!authLoading && user) {
-      checkProfile();
+      loadBarberData();
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading]);
 
   const handleServiceChange = (index: number, field: keyof ServiceInput, value: string) => {
     const newServices = [...services];
@@ -64,7 +70,7 @@ export default function OnboardingPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!user) return;
+    if (!user || !barber) return;
     
     setError("");
     setSaving(true);
@@ -75,15 +81,18 @@ export default function OnboardingPage() {
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/(^-|-$)+/g, "");
 
-      const isAvailable = await barberService.checkSlugAvailability(formattedSlug);
-      if (!isAvailable) {
-        setError("Esta URL ya está en uso. Por favor, elige otra.");
-        setSaving(false);
-        return;
+      // Solo chequear si el slug cambió
+      if (formattedSlug !== barber.slug) {
+        const isAvailable = await barberService.checkSlugAvailability(formattedSlug);
+        if (!isAvailable) {
+          setError("Esta URL ya está en uso. Por favor, elige otra.");
+          setSaving(false);
+          return;
+        }
       }
 
-      let avatarUrl = null;
-      let coverUrl = null;
+      let avatarUrl = barber.avatar_url;
+      let coverUrl = barber.cover_url;
 
       if (avatarFile) {
         const path = `${user.id}/${storageService.generateFileName("avatar", avatarFile)}`;
@@ -99,49 +108,43 @@ export default function OnboardingPage() {
         (s) => s.name.trim() !== "" && s.price.trim() !== ""
       );
 
-      const barbershop = await barberService.createProfile({
-        user_id: user.id,
+      await barberService.updateBarbershop(barber.id, {
         name: fullName,
         full_name: fullName,
         slug: formattedSlug,
         num_barbers: parseInt(numBarbers) || 1,
         avatar_url: avatarUrl,
         cover_url: coverUrl,
-        location: null, // Default to null, can be updated later
+        location,
         services: filteredServices,
-      });
-
-      await barberService.addStaffMember({
-        barbershop_id: barbershop.id,
-        user_id: user.id,
-        name: profile?.full_name || fullName,
-        avatar_url: avatarUrl,
-        role: "owner",
       });
 
       router.push("/dashboard");
     } catch (err: any) {
-      setError(err.message || "Error al guardar el perfil");
+      setError(err.message || "Error al actualizar el perfil");
     } finally {
       setSaving(false);
     }
   }
 
-  if (authLoading) return (
+  if (authLoading || loading) return (
     <div className="flex min-h-screen items-center justify-center bg-background">
       <div className="h-8 w-8 animate-spin rounded-full border-2 border-muted border-t-primary" />
     </div>
   );
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background p-6 md:p-12">
-      <div className="w-full max-w-2xl">
-        <div className="mb-12 text-center">
-          <Link href="/" className="mb-8 inline-block text-3xl font-black tracking-tighter text-foreground">
-            Barber<span className="text-primary">App</span>
-          </Link>
-          <h1 className="text-3xl font-black text-foreground md:text-4xl">Configura tu Barbería</h1>
-          <p className="mt-3 text-muted-foreground text-lg">Crea tu perfil profesional y empieza a recibir citas.</p>
+    <main className="min-h-screen bg-background p-6 md:p-12">
+      <div className="mx-auto max-w-2xl">
+        <div className="mb-12">
+          <button 
+            onClick={() => router.back()}
+            className="mb-8 flex items-center gap-2 text-sm font-bold text-muted-foreground hover:text-foreground transition-colors"
+          >
+            ← Volver al Dashboard
+          </button>
+          <h1 className="text-3xl font-black text-foreground md:text-4xl">Editar Perfil</h1>
+          <p className="mt-3 text-muted-foreground text-lg">Actualiza la información de tu barbería.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-10 rounded-3xl border border-border bg-secondary/30 p-8 shadow-2xl backdrop-blur-sm md:p-12">
@@ -161,7 +164,6 @@ export default function OnboardingPage() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   className="block w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/30"
-                  placeholder="Ej: La Barbería de Juan"
                 />
               </div>
 
@@ -199,7 +201,6 @@ export default function OnboardingPage() {
                   value={slug}
                   onChange={(e) => setSlug(e.target.value)}
                   className="block w-full rounded-xl border border-border bg-background py-3 pl-[125px] pr-4 text-foreground font-bold focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/20"
-                  placeholder="barberia-juan"
                 />
               </div>
             </div>
@@ -214,7 +215,7 @@ export default function OnboardingPage() {
             
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Logo / Perfil</label>
+                <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Logo / Perfil (Nueva)</label>
                 <div className="relative">
                   <input
                     type="file"
@@ -225,7 +226,7 @@ export default function OnboardingPage() {
                 </div>
               </div>
               <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Imagen de Portada</label>
+                <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Imagen de Portada (Nueva)</label>
                 <div className="relative">
                   <input
                     type="file"
@@ -301,11 +302,11 @@ export default function OnboardingPage() {
                 {saving ? (
                   <>
                     <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary-foreground border-t-transparent" />
-                    <span>Guardando perfil...</span>
+                    <span>Guardando cambios...</span>
                   </>
                 ) : (
                   <>
-                    <span>Lanzar mi Barbería</span>
+                    <span>Actualizar Perfil</span>
                     <span className="transition-transform group-hover:translate-x-1">→</span>
                   </>
                 )}

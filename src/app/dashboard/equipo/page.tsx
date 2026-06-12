@@ -53,7 +53,7 @@ export default function TeamManagement() {
     try {
       const newMember = await barberService.addStaffMember({
         barbershop_id: profile.staffInfo.barbershop_id,
-        user_id: null, // Initial staff members don't have a user account linked yet
+        user_id: null,
         name: newName,
         avatar_url: null,
         role: newRole,
@@ -61,7 +61,6 @@ export default function TeamManagement() {
 
       setStaff((prev) => [...prev, newMember]);
       
-      // Actualizar el contador en la barbería
       await barberService.updateBarbershop(profile.staffInfo.barbershop_id, {
         num_barbers: staff.length + 1
       });
@@ -77,102 +76,111 @@ export default function TeamManagement() {
 
   if (authLoading || loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50">
-        <p className="font-medium text-gray-500">Cargando equipo...</p>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-2 border-muted border-t-primary" />
       </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-gray-50 p-4 md:p-8">
-      <div className="mx-auto max-w-4xl">
-        <div className="mb-8 flex items-center justify-between">
+    <main className="min-h-screen bg-background p-6 md:p-12">
+      <div className="mx-auto max-w-5xl">
+        <div className="mb-12 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
           <div>
-            <Link href="/dashboard" className="text-sm font-medium text-gray-500 hover:text-black">
-              ← Volver al Panel
+            <Link href="/dashboard" className="mb-4 inline-flex items-center gap-2 text-sm font-bold text-muted-foreground transition-colors hover:text-primary">
+              <ArrowLeftIcon className="h-4 w-4" />
+              Volver al Panel
             </Link>
-            <h1 className="mt-2 text-2xl font-bold text-gray-900 md:text-3xl">
-              Gestión de Equipo
+            <h1 className="text-3xl font-black tracking-tight text-foreground md:text-4xl">
+              Gestión de <span className="text-primary">Equipo</span>
             </h1>
           </div>
           {!isAdding && (
             <button
               onClick={() => setIsAdding(true)}
-              className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+              className="group flex items-center gap-2 rounded-xl bg-primary px-6 py-3 font-black text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
             >
-              + Añadir Barbero
+              <span>+ Añadir Barbero</span>
             </button>
           )}
         </div>
 
         {isAdding && (
-          <div className="mb-8 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-            <h2 className="mb-4 text-lg font-bold text-gray-900">Nuevo Miembro</h2>
-            <form onSubmit={handleAddMember} className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <div className="sm:col-span-1">
-                <label className="block text-xs font-medium text-gray-500 mb-1 uppercase">Nombre</label>
+          <div className="mb-12 rounded-3xl border border-border bg-secondary/30 p-8 shadow-2xl backdrop-blur-sm">
+            <h2 className="mb-6 text-xl font-black text-foreground">Nuevo Profesional</h2>
+            <form onSubmit={handleAddMember} className="grid grid-cols-1 gap-6 md:grid-cols-12">
+              <div className="md:col-span-5 space-y-1.5">
+                <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Nombre del barbero</label>
                 <input
                   type="text"
                   required
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   placeholder="Ej: Carlos G."
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none"
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all"
                 />
               </div>
-              <div className="sm:col-span-1">
-                <label className="block text-xs font-medium text-gray-500 mb-1 uppercase">Rol</label>
+              <div className="md:col-span-3 space-y-1.5">
+                <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Rol asignado</label>
                 <select
                   value={newRole}
                   onChange={(e) => setNewRole(e.target.value as any)}
-                  className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-black focus:outline-none"
+                  className="w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all cursor-pointer"
                 >
                   <option value="barber">Barbero</option>
                   <option value="owner">Dueño / Admin</option>
                 </select>
               </div>
-              <div className="flex items-end gap-2 sm:col-span-1">
+              <div className="flex items-end gap-3 md:col-span-4">
                 <button
                   type="submit"
                   disabled={saving}
-                  className="flex-1 rounded-lg bg-black py-2 text-sm font-bold text-white hover:bg-gray-800 disabled:bg-gray-400"
+                  className="flex-1 rounded-xl bg-primary py-3 font-black text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
                 >
                   {saving ? "Guardando..." : "Guardar"}
                 </button>
                 <button
                   type="button"
                   onClick={() => setIsAdding(false)}
-                  className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                  className="rounded-xl border border-border bg-background px-6 py-3 text-sm font-bold text-muted-foreground transition-all hover:border-foreground hover:text-foreground"
                 >
                   Cancelar
                 </button>
               </div>
             </form>
-            {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+            {error && (
+              <div className="mt-6 rounded-lg bg-red-500/10 p-3 text-center text-xs font-medium text-red-400 border border-red-500/20">
+                {error}
+              </div>
+            )}
           </div>
         )}
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {staff.map((member) => (
-            <div key={member.id} className="flex items-center gap-4 rounded-xl border border-gray-100 bg-white p-4 shadow-sm">
-              <div className="relative h-12 w-12 overflow-hidden rounded-full bg-gray-100">
+            <div 
+              key={member.id} 
+              className="group flex items-center gap-5 rounded-3xl border border-border bg-secondary/30 p-6 transition-all hover:border-primary/50 hover:bg-secondary shadow-lg shadow-black/5"
+            >
+              <div className="relative h-16 w-16 overflow-hidden rounded-2xl border-2 border-border bg-background shadow-inner">
                 {member.avatar_url ? (
-                  <Image src={member.avatar_url} alt={member.name} fill className="object-cover" unoptimized />
+                  <Image src={member.avatar_url} alt={member.name} fill className="object-cover transition-transform group-hover:scale-110" unoptimized />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-lg font-bold text-gray-300">
+                  <div className="flex h-full w-full items-center justify-center text-2xl font-black text-muted-foreground">
                     {member.name.charAt(0)}
                   </div>
                 )}
               </div>
               <div>
-                <h3 className="font-bold text-gray-900">{member.name}</h3>
-                <p className="text-xs font-medium uppercase tracking-wider text-gray-400">
-                  {member.role === "owner" ? "Dueño / Admin" : "Barbero"}
+                <h3 className="text-lg font-black text-foreground group-hover:text-primary transition-colors">{member.name}</h3>
+                <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground opacity-60">
+                  {member.role === "owner" ? "Dueño / Admin" : "Barbero Profesional"}
                 </p>
                 {member.user_id && (
-                  <span className="mt-1 inline-block rounded-full bg-green-50 px-2 py-0.5 text-[10px] font-bold text-green-600">
-                    Cuenta vinculada
-                  </span>
+                  <div className="mt-2 flex items-center gap-1">
+                    <div className="h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
+                    <span className="text-[10px] font-bold text-primary">Cuenta vinculada</span>
+                  </div>
                 )}
               </div>
             </div>
@@ -180,5 +188,13 @@ export default function TeamManagement() {
         </div>
       </div>
     </main>
+  );
+}
+
+function ArrowLeftIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+    </svg>
   );
 }

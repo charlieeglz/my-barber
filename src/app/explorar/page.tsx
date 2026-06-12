@@ -10,6 +10,7 @@ type Barber = {
   slug: string;
   full_name: string;
   avatar_url: string | null;
+  location: string | null;
 };
 
 export default function DirectoryPage() {
@@ -21,7 +22,7 @@ export default function DirectoryPage() {
     async function loadBarbers() {
       const { data } = await supabase
         .from("barbershops")
-        .select("id, slug, full_name, avatar_url");
+        .select("id, slug, full_name, avatar_url, location");
 
       if (data) {
         setBarbers(data);
@@ -39,77 +40,90 @@ export default function DirectoryPage() {
   });
 
   return (
-    <main className="min-h-screen bg-gray-50 p-4 md:p-8">
-      <div className="mx-auto max-w-5xl">
-        <div className="mb-12 text-center">
-          <Link href="/" className="mb-4 inline-block text-sm font-medium text-gray-500 hover:text-black">
-            ← Volver al inicio
+    <main className="min-h-screen bg-background p-6 md:p-12">
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-16">
+          <Link href="/" className="mb-8 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground transition-colors hover:text-primary">
+            <ArrowLeftIcon className="h-4 w-4" />
+            Volver al inicio
           </Link>
-          <h1 className="mb-4 text-3xl font-extrabold text-gray-900 md:text-5xl">
-            Encuentra tu estilo
-          </h1>
-          <p className="mb-8 text-lg text-gray-600">
-            Explora las mejores barberías y reserva tu cita en segundos.
-          </p>
+          
+          <div className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-xl">
+              <h1 className="mb-3 text-4xl font-extrabold tracking-tight text-foreground md:text-5xl">
+                Descubre <span className="text-primary">Excelencia</span>
+              </h1>
+              <p className="text-lg text-muted-foreground">
+                Explora las mejores barberías y reserva tu cita con los mejores profesionales de la ciudad.
+              </p>
+            </div>
 
-          {/* Buscador */}
-          <div className="relative mx-auto max-w-xl">
-            <input
-              type="text"
-              placeholder="Buscar por nombre o ciudad..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full rounded-2xl border border-gray-200 bg-white px-6 py-4 text-lg shadow-sm transition-all focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-            />
-            <span className="absolute right-6 top-1/2 -translate-y-1/2 text-xl grayscale opacity-50">
-              🔍
-            </span>
+            {/* Buscador */}
+            <div className="relative w-full max-w-md">
+              <input
+                type="text"
+                placeholder="Buscar por nombre..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full rounded-2xl border border-border bg-secondary/50 px-6 py-4 pl-12 text-foreground shadow-sm transition-all focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+              <SearchIcon className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+            </div>
           </div>
         </div>
 
         {loading ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-black"></div>
-            <p className="mt-4 font-medium text-gray-500">Buscando barberías...</p>
+          <div className="flex flex-col items-center justify-center py-32">
+            <div className="h-10 w-10 animate-spin rounded-full border-4 border-muted border-t-primary"></div>
+            <p className="mt-6 font-medium text-muted-foreground">Localizando barberías...</p>
           </div>
         ) : filteredBarbers.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-gray-200 bg-white p-20 text-center shadow-sm">
-            <p className="text-xl font-medium text-gray-400">
+          <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-secondary/20 py-32 text-center">
+            <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-muted text-muted-foreground text-2xl">
+              📭
+            </div>
+            <p className="max-w-xs text-xl font-medium text-muted-foreground">
               {searchTerm 
-                ? `No hemos encontrado ninguna barbería que coincida con "${searchTerm}"`
+                ? `No hay resultados para "${searchTerm}"`
                 : "Aún no hay barberías registradas en la plataforma."}
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {filteredBarbers.map((barber) => (
               <Link
                 key={barber.id}
                 href={`/${barber.slug}`}
-                className="group flex flex-col items-center justify-center rounded-3xl border border-gray-100 bg-white p-8 shadow-sm transition-all hover:-translate-y-1 hover:border-black hover:shadow-xl"
+                className="group relative flex flex-col items-center justify-center overflow-hidden rounded-3xl border border-border bg-secondary/30 p-8 transition-all hover:border-primary/50 hover:bg-secondary"
               >
-                <div className="relative mb-6 h-24 w-24 overflow-hidden rounded-2xl bg-gray-100 shadow-inner group-hover:shadow-md">
+                {/* Decoration background hover */}
+                <div className="absolute inset-0 -z-10 bg-gradient-to-br from-primary/5 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                
+                <div className="relative mb-6 h-28 w-28 overflow-hidden rounded-2xl border border-border bg-background shadow-inner">
                   {barber.avatar_url ? (
                     <Image
                       src={barber.avatar_url}
                       alt={barber.full_name}
                       fill
-                      className="object-cover"
+                      className="object-cover transition-transform duration-500 group-hover:scale-110"
                       unoptimized
                     />
                   ) : (
-                    <div className="flex h-full w-full items-center justify-center text-3xl font-bold text-gray-300">
+                    <div className="flex h-full w-full items-center justify-center text-3xl font-bold text-muted-foreground">
                       {barber.full_name?.charAt(0) || "B"}
                     </div>
                   )}
                 </div>
                 
-                <h2 className="text-xl font-bold capitalize text-gray-900 group-hover:text-black">
+                <h2 className="mb-2 text-2xl font-bold capitalize text-foreground">
                   {barber.full_name}
                 </h2>
+                <p className="mb-8 text-sm text-muted-foreground">
+                  {barber.location || "Ubicación no disponible"}
+                </p>
                 
-                <div className="mt-6 rounded-xl bg-gray-50 px-5 py-2 text-sm font-bold text-gray-600 transition-colors group-hover:bg-black group-hover:text-white">
-                  Ver perfil
+                <div className="flex w-full items-center justify-center rounded-xl bg-primary py-3 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/10 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                  Ver Perfil
                 </div>
               </Link>
             ))}
@@ -117,5 +131,21 @@ export default function DirectoryPage() {
         )}
       </div>
     </main>
+  );
+}
+
+function ArrowLeftIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+    </svg>
+  );
+}
+
+function SearchIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+    </svg>
   );
 }

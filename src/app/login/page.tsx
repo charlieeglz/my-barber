@@ -4,6 +4,7 @@ import { useState, Suspense, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { authService } from "@/lib/services/auth.service";
 import { useAuth } from "@/hooks/useAuth";
+import Link from "next/link";
 
 function LoginContent() {
   const searchParams = useSearchParams();
@@ -22,14 +23,12 @@ function LoginContent() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Success message if coming from email confirmation
   useEffect(() => {
     if (isConfirmed) {
       setSuccess("¡Email confirmado con éxito! Ahora puedes iniciar sesión.");
     }
   }, [isConfirmed]);
 
-  // Redirect if already logged in
   useEffect(() => {
     if (!authLoading && user && profile && !isConfirmed) {
       const redirectPath = profile.role === "barber" ? "/dashboard" : nextParam || "/cliente";
@@ -45,13 +44,14 @@ function LoginContent() {
 
     try {
       if (isLogin) {
-        await authService.signIn(email, password);
-        // We wait for the next render for useAuth to pick it up or push manually
-        router.push(role === "barber" ? "/dashboard" : nextParam || "/cliente");
+        const { user: authUser } = await authService.signIn(email, password);
+        const actualRole = authUser?.user_metadata?.role || role;
+        router.refresh(); // Forzar sincronización de cookies en el servidor
+        router.push(actualRole === "barber" ? "/dashboard" : nextParam || "/cliente");
       } else {
         await authService.signUp(email, password, name, role, phone);
-        setSuccess("Registro casi completado. Por favor, revisa tu email para confirmar tu cuenta.");
-        setIsLogin(true); // Switch to login view so they can enter after confirmation
+        setSuccess("Registro casi completado. Revisa tu email para confirmar tu cuenta.");
+        setIsLogin(true);
       }
     } catch (err: any) {
       setError(err.message || "Error de autenticación");
@@ -60,123 +60,142 @@ function LoginContent() {
     }
   }
 
-  if (authLoading) return <p className="text-center py-8">Verificando sesión...</p>;
+  if (authLoading) return (
+    <div className="flex items-center justify-center py-12">
+      <div className="h-8 w-8 animate-spin rounded-full border-2 border-muted border-t-primary" />
+    </div>
+  );
 
   return (
-    <div className="w-full max-w-sm rounded-xl bg-white p-8 shadow-md">
-      <h1 className="mb-6 text-center text-2xl font-bold text-gray-900">
-        {isLogin ? "Acceso a la plataforma" : "Crear nueva cuenta"}
-      </h1>
-
-      {success && (
-        <div className="mb-4 rounded-lg bg-green-50 p-3 text-center text-sm font-medium text-green-700">
-          {success}
-        </div>
-      )}
-
-      <div className="mb-6 flex rounded-lg bg-gray-100 p-1">
-        <button
-          type="button"
-          onClick={() => setRole("client")}
-          className={`w-1/2 rounded-md py-2 text-sm font-medium transition-colors ${role === "client" ? "bg-white text-black shadow-sm" : "text-gray-500 hover:text-black"}`}
-        >
-          Soy Cliente
-        </button>
-        <button
-          type="button"
-          onClick={() => setRole("barber")}
-          className={`w-1/2 rounded-md py-2 text-sm font-medium transition-colors ${role === "barber" ? "bg-white text-black shadow-sm" : "text-gray-500 hover:text-black"}`}
-        >
-          Soy Barbero
-        </button>
+    <div className="w-full max-w-md">
+      <div className="mb-12 text-center">
+        <Link href="/" className="mb-8 inline-block text-3xl font-black tracking-tighter text-foreground">
+          Barber<span className="text-primary">App</span>
+        </Link>
+        <h1 className="text-2xl font-bold text-foreground">
+          {isLogin ? "Bienvenido de nuevo" : "Crea tu cuenta profesional"}
+        </h1>
+        <p className="mt-2 text-muted-foreground">
+          {isLogin ? "Accede a tu panel y gestiona tus reservas." : "Únete a la red de barberías más exclusiva."}
+        </p>
       </div>
 
-      <form onSubmit={handleEmailAuth} className="space-y-4">
-        {!isLogin && (
-          <>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Nombre completo
-              </label>
-              <input
-                type="text"
-                required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Teléfono móvil
-              </label>
-              <input
-                type="tel"
-                required
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="600 000 000"
-                className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-              />
-            </div>
-          </>
+      <div className="rounded-3xl border border-border bg-secondary/30 p-8 shadow-2xl backdrop-blur-sm">
+        {success && (
+          <div className="mb-6 rounded-xl bg-primary/10 p-4 text-center text-sm font-medium text-primary border border-primary/20">
+            {success}
+          </div>
         )}
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Email
-          </label>
-          <input
-            type="email"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700">
-            Contraseña
-          </label>
-          <input
-            type="password"
-            required
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 text-gray-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full rounded-md bg-black px-4 py-2 font-medium text-white hover:bg-gray-800 disabled:bg-gray-400"
-        >
-          {loading ? "Procesando..." : isLogin ? "Entrar" : "Registrarse"}
-        </button>
-      </form>
 
-      <p className="mt-6 text-center text-sm text-gray-600">
-        {isLogin ? "¿No tienes cuenta? " : "¿Ya tienes cuenta? "}
-        <button
-          onClick={() => setIsLogin(!isLogin)}
-          className="font-semibold text-black hover:underline"
-        >
-          {isLogin ? "Regístrate" : "Inicia sesión"}
-        </button>
-      </p>
+        <div className="mb-8 flex rounded-xl bg-background/50 p-1.5 border border-border">
+          <button
+            type="button"
+            onClick={() => setRole("client")}
+            className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all ${role === "client" ? "bg-primary text-primary-foreground shadow-lg" : "text-muted-foreground hover:text-foreground"}`}
+          >
+            Soy Cliente
+          </button>
+          <button
+            type="button"
+            onClick={() => setRole("barber")}
+            className={`flex-1 rounded-lg py-2.5 text-sm font-bold transition-all ${role === "barber" ? "bg-primary text-primary-foreground shadow-lg" : "text-muted-foreground hover:text-foreground"}`}
+          >
+            Soy Barbero
+          </button>
+        </div>
 
-      {error && (
-        <p className="mt-4 text-center text-sm font-medium text-red-600">
-          {error}
-        </p>
-      )}
+        <form onSubmit={handleEmailAuth} className="space-y-5">
+          {!isLogin && (
+            <>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Nombre completo
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Ej: Juan Pérez"
+                  className="block w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                  Teléfono móvil
+                </label>
+                <input
+                  type="tel"
+                  required
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="600 000 000"
+                  className="block w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50"
+                />
+              </div>
+            </>
+          )}
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Email
+            </label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="tu@email.com"
+              className="block w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+              Contraseña
+            </label>
+            <input
+              type="password"
+              required
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="block w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/50"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full rounded-xl bg-primary py-4 font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50"
+          >
+            {loading ? "Procesando..." : isLogin ? "Iniciar Sesión" : "Crear Cuenta"}
+          </button>
+        </form>
+
+        <div className="mt-8 text-center">
+          <p className="text-sm text-muted-foreground">
+            {isLogin ? "¿Aún no tienes cuenta? " : "¿Ya eres miembro? "}
+            <button
+              onClick={() => setIsLogin(!isLogin)}
+              className="font-bold text-primary hover:underline"
+            >
+              {isLogin ? "Regístrate ahora" : "Entra aquí"}
+            </button>
+          </p>
+        </div>
+
+        {error && (
+          <div className="mt-6 rounded-lg bg-red-500/10 p-3 text-center text-xs font-medium text-red-400 border border-red-500/20">
+            {error}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
 export default function Login() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-gray-50 p-6">
-      <Suspense fallback={<p>Cargando...</p>}>
+    <main className="flex min-h-screen items-center justify-center bg-background p-6">
+      <Suspense fallback={<div className="h-8 w-8 animate-spin rounded-full border-2 border-muted border-t-primary" />}>
         <LoginContent />
       </Suspense>
     </main>

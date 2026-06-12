@@ -14,6 +14,7 @@ export type Barbershop = {
   num_barbers: number;
   avatar_url: string | null;
   cover_url: string | null;
+  location: string | null;
   services: BarberService[];
   created_at?: string;
 };

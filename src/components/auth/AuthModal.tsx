@@ -40,87 +40,93 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-      <div className="w-full max-w-sm rounded-2xl bg-white p-8 shadow-2xl">
-        <div className="mb-6 flex items-center justify-between">
-          <h2 className="text-xl font-bold text-gray-900">
-            {isLogin ? "Inicia Sesión" : "Crea tu cuenta"}
-          </h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 transition-colors hover:text-black"
-          >
-            ✕
-          </button>
-        </div>
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-background/80 p-4 backdrop-blur-md">
+      <div className="w-full max-w-sm overflow-hidden rounded-2xl border border-border bg-secondary shadow-2xl">
+        <div className="px-8 pt-8 pb-6">
+          <div className="mb-8 flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-foreground">
+              {isLogin ? "Bienvenido" : "Crea tu cuenta"}
+            </h2>
+            <button
+              onClick={onClose}
+              className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-5 w-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {!isLogin && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700">
-                Nombre completo
+          <form onSubmit={handleSubmit} className="space-y-5">
+            {!isLogin && (
+              <div className="space-y-1.5">
+                <label className="text-sm font-medium text-muted-foreground">
+                  Nombre completo
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Juan Pérez"
+                  className="block w-full rounded-xl border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all"
+                />
+              </div>
+            )}
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-muted-foreground">
+                Email
               </label>
               <input
-                type="text"
+                type="email"
                 required
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Ej: Juan Pérez"
-                className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="tu@email.com"
+                className="block w-full rounded-xl border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all"
               />
             </div>
+            <div className="space-y-1.5">
+              <label className="text-sm font-medium text-muted-foreground">
+                Contraseña
+              </label>
+              <input
+                type="password"
+                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                className="block w-full rounded-xl border border-border bg-background px-4 py-2.5 text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full rounded-xl bg-primary py-3.5 font-bold text-primary-foreground shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:hover:scale-100"
+            >
+              {loading ? "Procesando..." : isLogin ? "Iniciar Sesión" : "Crear Cuenta"}
+            </button>
+          </form>
+
+          <div className="mt-8 text-center">
+            <p className="text-sm text-muted-foreground">
+              {isLogin ? "¿No tienes cuenta? " : "¿Ya tienes cuenta? "}
+              <button
+                onClick={() => setIsLogin(!isLogin)}
+                className="font-semibold text-primary hover:underline"
+              >
+                {isLogin ? "Regístrate gratis" : "Inicia sesión"}
+              </button>
+            </p>
+          </div>
+
+          {error && (
+            <div className="mt-6 rounded-lg bg-red-500/10 p-3 text-center text-xs font-medium text-red-400">
+              {error}
+            </div>
           )}
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Email
-            </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="tu@email.com"
-              className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700">
-              Contraseña
-            </label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="mt-1 block w-full rounded-lg border border-gray-300 px-4 py-2 text-gray-900 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full rounded-xl bg-black py-3 font-bold text-white transition-all hover:bg-gray-800 disabled:bg-gray-400"
-          >
-            {loading ? "Procesando..." : isLogin ? "Entrar y Reservar" : "Registrarse y Reservar"}
-          </button>
-        </form>
-
-        <p className="mt-6 text-center text-sm text-gray-600">
-          {isLogin ? "¿No tienes cuenta? " : "¿Ya tienes cuenta? "}
-          <button
-            onClick={() => setIsLogin(!isLogin)}
-            className="font-bold text-black hover:underline"
-          >
-            {isLogin ? "Regístrate" : "Inicia sesión"}
-          </button>
-        </p>
-
-        {error && (
-          <p className="mt-4 text-center text-xs font-medium text-red-600">
-            {error}
-          </p>
-        )}
+        </div>
       </div>
     </div>
   );

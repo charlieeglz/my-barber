@@ -39,36 +39,38 @@ export function Calendar({ selectedDate, onDateSelect, appointments }: CalendarP
   };
 
   return (
-    <div className="mb-8 rounded-xl border border-gray-100 bg-white p-6 shadow-sm">
-      <div className="mb-4 flex items-center justify-between">
-        <button
-          onClick={handlePrevMonth}
-          className="rounded-full p-2 font-bold text-gray-600 hover:bg-gray-100"
-        >
-          &lt;
-        </button>
-        <h2 className="text-lg font-bold capitalize text-gray-800">
-          {monthNames[month]} {year}
+    <div className="mb-8 overflow-hidden rounded-3xl border border-border bg-secondary/30 p-8 shadow-2xl backdrop-blur-sm">
+      <div className="mb-8 flex items-center justify-between">
+        <h2 className="text-2xl font-black capitalize text-foreground">
+          {monthNames[month]} <span className="text-primary">{year}</span>
         </h2>
-        <button
-          onClick={handleNextMonth}
-          className="rounded-full p-2 font-bold text-gray-600 hover:bg-gray-100"
-        >
-          &gt;
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handlePrevMonth}
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-background/50 text-foreground transition-all hover:bg-primary hover:text-primary-foreground hover:border-primary"
+          >
+            <ChevronLeftIcon className="h-5 w-5" />
+          </button>
+          <button
+            onClick={handleNextMonth}
+            className="flex h-10 w-10 items-center justify-center rounded-xl border border-border bg-background/50 text-foreground transition-all hover:bg-primary hover:text-primary-foreground hover:border-primary"
+          >
+            <ChevronRightIcon className="h-5 w-5" />
+          </button>
+        </div>
       </div>
 
-      <div className="mb-2 grid grid-cols-7 gap-1 text-center">
+      <div className="mb-4 grid grid-cols-7 gap-2 text-center">
         {["L", "M", "X", "J", "V", "S", "D"].map((day) => (
-          <div key={day} className="text-xs font-bold text-gray-400">
+          <div key={day} className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/50">
             {day}
           </div>
         ))}
       </div>
 
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 gap-2">
         {blanksArray.map((blank) => (
-          <div key={`blank-${blank}`} className="p-2"></div>
+          <div key={`blank-${blank}`} className="aspect-square"></div>
         ))}
         {daysArray.map((day) => {
           const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
@@ -80,15 +82,17 @@ export function Calendar({ selectedDate, onDateSelect, appointments }: CalendarP
             <button
               key={day}
               onClick={() => handleDayClick(day)}
-              className={`relative flex h-10 w-full items-center justify-center rounded-lg text-sm transition-all
-                ${isSelected ? "bg-black font-bold text-white" : "text-gray-700 hover:bg-gray-100"}
-                ${isToday && !isSelected ? "border border-black" : ""}
+              className={`relative flex aspect-square w-full flex-col items-center justify-center rounded-xl text-sm font-bold transition-all
+                ${isSelected 
+                  ? "bg-primary text-primary-foreground shadow-lg shadow-primary/20 scale-105" 
+                  : "text-foreground hover:bg-muted hover:scale-105"}
+                ${isToday && !isSelected ? "border-2 border-primary/30 text-primary" : ""}
               `}
             >
-              {day}
+              <span>{day}</span>
               {hasApt && (
                 <span
-                  className={`absolute bottom-1 h-1 w-1 rounded-full ${isSelected ? "bg-white" : "bg-black"}`}
+                  className={`absolute bottom-2 h-1 w-1 rounded-full ${isSelected ? "bg-primary-foreground" : "bg-primary"}`}
                 ></span>
               )}
             </button>
@@ -96,5 +100,21 @@ export function Calendar({ selectedDate, onDateSelect, appointments }: CalendarP
         })}
       </div>
     </div>
+  );
+}
+
+function ChevronLeftIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+    </svg>
+  );
+}
+
+function ChevronRightIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+    </svg>
   );
 }
