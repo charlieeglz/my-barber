@@ -186,66 +186,69 @@ export default function BarberProfile({
 
           {/* Columna Lateral: Reserva */}
           <div className="lg:col-span-4">
-            <div className="sticky top-8 overflow-hidden rounded-3xl border border-border bg-secondary/50 p-8 shadow-2xl backdrop-blur-md">
-              <div className="absolute -right-12 -top-12 h-24 w-24 rounded-full bg-primary/10 blur-2xl" />
-              <h3 className="mb-2 text-2xl font-black text-foreground">Reserva</h3>
-              <p className="mb-8 text-muted-foreground leading-relaxed">
-                Asegura tu lugar con nosotros. Confirmación en tiempo real y recordatorios automáticos.
-              </p>
-              
-              <button
-                onClick={handleReserveClick}
-                className="group relative flex w-full items-center justify-center gap-3 rounded-2xl bg-primary py-5 text-lg font-black text-primary-foreground shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
-              >
-                <span>Reservar Cita</span>
-                <span className="transition-transform group-hover:translate-x-1">→</span>
-              </button>
-
-              <div className="mt-10 space-y-4 border-t border-border pt-8">
-                <div className="flex items-center gap-4 text-sm text-foreground">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                    <CheckIcon className="h-5 w-5" />
-                  </div>
-                  <span className="font-semibold">Confirmación inmediata</span>
-                </div>
-                <div className="flex items-center gap-4 text-sm text-foreground">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
-                    <CalendarIcon className="h-5 w-5" />
-                  </div>
-                  <span className="font-semibold">Elige tu horario favorito</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Mapa y Ubicación */}
-            {barber?.location && (
-              <div className="mt-8 overflow-hidden rounded-3xl border border-border bg-secondary/30 p-6 shadow-2xl backdrop-blur-md">
-                <h3 className="mb-4 text-lg font-black text-foreground">Ubicación</h3>
-                <div className="relative mb-4 aspect-video w-full overflow-hidden rounded-2xl border border-border bg-muted">
-                  <iframe
-                    width="100%"
-                    height="100%"
-                    style={{ border: 0, filter: "grayscale(1) invert(0.9) contrast(1.2)" }}
-                    loading="lazy"
-                    allowFullScreen
-                    referrerPolicy="no-referrer-when-downgrade"
-                    src={`https://maps.google.com/maps?q=${encodeURIComponent(barber.location)}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
-                  ></iframe>
-                </div>
-                <p className="mb-4 text-sm text-muted-foreground">
-                  {barber.location}
+            <div className="lg:sticky lg:top-8 space-y-8">
+              {/* Card Reserva */}
+              <div className="overflow-hidden rounded-3xl border border-border bg-secondary/50 p-8 shadow-2xl backdrop-blur-md">
+                <div className="absolute -right-12 -top-12 h-24 w-24 rounded-full bg-primary/10 blur-2xl" />
+                <h3 className="mb-2 text-2xl font-black text-foreground">Reserva</h3>
+                <p className="mb-8 text-muted-foreground leading-relaxed">
+                  Asegura tu lugar con nosotros. Confirmación en tiempo real y recordatorios automáticos.
                 </p>
-                <a
-                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(barber.location)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="flex items-center justify-center gap-2 rounded-xl border border-border bg-background py-3 text-sm font-bold text-foreground transition-all hover:border-primary/50 hover:bg-secondary"
+                
+                <button
+                  onClick={handleReserveClick}
+                  className="group relative flex w-full items-center justify-center gap-3 rounded-2xl bg-primary py-5 text-lg font-black text-primary-foreground shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
-                  <MapIcon className="h-4 w-4 text-primary" />
-                  Ver en Google Maps
-                </a>
+                  <span>Reservar Cita</span>
+                  <span className="transition-transform group-hover:translate-x-1">→</span>
+                </button>
+
+                <div className="mt-10 space-y-4 border-t border-border pt-8">
+                  <div className="flex items-center gap-4 text-sm text-foreground">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <CheckIcon className="h-5 w-5" />
+                    </div>
+                    <span className="font-semibold">Confirmación inmediata</span>
+                  </div>
+                  <div className="flex items-center gap-4 text-sm text-foreground">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <CalendarIcon className="h-5 w-5" />
+                    </div>
+                    <span className="font-semibold">Elige tu horario favorito</span>
+                  </div>
+                </div>
               </div>
-            )}
+
+              {/* Mapa y Ubicación */}
+              {barber?.location && (
+                <div className="overflow-hidden rounded-3xl border border-border bg-secondary/30 p-6 shadow-2xl backdrop-blur-md">
+                  <h3 className="mb-4 text-lg font-black text-foreground">Ubicación</h3>
+                  <div className="relative mb-4 aspect-video w-full overflow-hidden rounded-2xl border border-border bg-muted">
+                    <iframe
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0, filter: "grayscale(1) invert(0.9) contrast(1.2)" }}
+                      loading="lazy"
+                      allowFullScreen
+                      referrerPolicy="no-referrer-when-downgrade"
+                      src={`https://maps.google.com/maps?q=${encodeURIComponent(barber.location)}&t=&z=13&ie=UTF8&iwloc=&output=embed`}
+                    ></iframe>
+                  </div>
+                  <p className="mb-4 text-sm text-muted-foreground">
+                    {barber.location}
+                  </p>
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(barber.location)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center justify-center gap-2 rounded-xl border border-border bg-background py-3 text-sm font-bold text-foreground transition-all hover:border-primary/50 hover:bg-secondary"
+                  >
+                    <MapIcon className="h-4 w-4 text-primary" />
+                    Ver en Google Maps
+                  </a>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

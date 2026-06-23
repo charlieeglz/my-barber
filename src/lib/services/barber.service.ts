@@ -142,6 +142,15 @@ export const barberService = {
     return data as StaffMember;
   },
 
+  async deleteStaffMember(id: string) {
+    const { error } = await supabase
+      .from("staff")
+      .delete()
+      .eq("id", id);
+
+    if (error) throw error;
+  },
+
   // --- PORTFOLIO ---
 
   async getPortfolioPhotos(barberId: string, staffId?: string) {

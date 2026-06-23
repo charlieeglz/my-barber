@@ -23,10 +23,14 @@ export const dateUtils = {
    * Formatea una fecha ISO a una cadena legible de fecha (ej: "lunes, 10 de junio").
    */
   formatFriendlyDate(isoDate: string) {
-    return new Date(isoDate).toLocaleDateString("es-ES", {
+    const [datePart] = isoDate.split("T");
+    const [year, month, day] = datePart.split("-").map(Number);
+    const date = new Date(Date.UTC(year, month - 1, day));
+    return date.toLocaleDateString("es-ES", {
       weekday: "long",
       day: "numeric",
       month: "long",
+      timeZone: "UTC"
     });
   },
 
@@ -34,10 +38,9 @@ export const dateUtils = {
    * Formatea una fecha ISO a hora (ej: "10:30").
    */
   formatFriendlyTime(isoDate: string) {
-    return new Date(isoDate).toLocaleTimeString("es-ES", {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    const timePart = isoDate.split("T")[1];
+    if (!timePart) return "";
+    return timePart.substring(0, 5); // Retorna "HH:mm" directamente
   },
 
   /**
@@ -71,7 +74,7 @@ export const dateUtils = {
    * Combina una fecha (YYYY-MM-DD) y una hora (HH:mm) en un string ISO.
    */
   combineDateAndTime(date: string, time: string) {
-    return new Date(`${date}T${time}:00`).toISOString();
+    return `${date}T${time}:00.000Z`;
   },
 
   /**

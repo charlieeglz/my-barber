@@ -76,8 +76,8 @@ export const appointmentService = {
 
   // Importante: Ahora buscamos horas ocupadas por MIEMBRO DEL STAFF
   async getBookedTimes(staffId: string, date: string) {
-    const startOfDay = new Date(`${date}T00:00:00`).toISOString();
-    const endOfDay = new Date(`${date}T23:59:59`).toISOString();
+    const startOfDay = `${date}T00:00:00.000Z`;
+    const endOfDay = `${date}T23:59:59.999Z`;
 
     const { data, error } = await supabase
       .from("appointments")
@@ -90,8 +90,8 @@ export const appointmentService = {
     if (error) throw error;
     
     return data.map((apt) => {
-      const d = new Date(apt.appointment_date);
-      return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+      const timePart = apt.appointment_date.split("T")[1];
+      return timePart ? timePart.substring(0, 5) : "";
     });
   },
 
