@@ -2,7 +2,7 @@ import { supabase } from "../supabase";
 
 export type BarberService = {
   name: string;
-  price: string;
+  price: number; // en euros (ej: 20, 15.5)
 };
 
 export type Barbershop = {

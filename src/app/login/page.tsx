@@ -40,6 +40,24 @@ function LoginContent() {
     e.preventDefault();
     setError("");
     setSuccess("");
+
+    // Validaciones cliente (solo en registro)
+    if (!isLogin) {
+      if (name.trim().length < 2) {
+        setError("El nombre debe tener al menos 2 caracteres.");
+        return;
+      }
+      const phoneClean = phone.replace(/\s/g, "");
+      if (!/^[6-9]\d{8}$/.test(phoneClean)) {
+        setError("Introduce un teléfono español válido (9 dígitos, empieza por 6, 7, 8 o 9).");
+        return;
+      }
+    }
+    if (password.length < 8) {
+      setError("La contraseña debe tener al menos 8 caracteres.");
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -49,7 +67,7 @@ function LoginContent() {
         router.refresh(); // Forzar sincronización de cookies en el servidor
         router.push(actualRole === "barber" ? "/dashboard" : nextParam || "/cliente");
       } else {
-        await authService.signUp(email, password, name, role, phone);
+        await authService.signUp(email, password, name.trim(), role, phone.replace(/\s/g, ""));
         setSuccess("Registro casi completado. Revisa tu email para confirmar tu cuenta.");
         setIsLogin(true);
       }

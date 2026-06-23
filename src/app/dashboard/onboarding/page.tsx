@@ -96,19 +96,22 @@ export default function OnboardingPage() {
       }
 
       const filteredServices = services.filter(
-        (s) => s.name.trim() !== "" && s.price.trim() !== ""
+        (s) => s.name.trim() !== "" && s.price !== "" && parseFloat(s.price) > 0
       );
 
       const barbershop = await barberService.createProfile({
         user_id: user.id,
-        name: fullName,
-        full_name: fullName,
+        name: fullName.trim(),
+        full_name: fullName.trim(),
         slug: formattedSlug,
         num_barbers: parseInt(numBarbers) || 1,
         avatar_url: avatarUrl,
         cover_url: coverUrl,
-        location: null, // Default to null, can be updated later
-        services: filteredServices,
+        location: null,
+        services: filteredServices.map(s => ({
+          name: s.name.trim(),
+          price: parseFloat(s.price) || 0,
+        })),
       });
 
       await barberService.addStaffMember({
@@ -269,9 +272,11 @@ export default function OnboardingPage() {
                   </div>
                   <div className="relative w-32">
                     <input
-                      type="text"
+                      type="number"
                       required
-                      placeholder="Ej: 15€"
+                      min="0"
+                      step="0.5"
+                      placeholder="Ej: 20"
                       value={service.price}
                       onChange={(e) => handleServiceChange(index, "price", e.target.value)}
                       className="block w-full rounded-xl border border-border bg-background px-4 py-3 text-sm font-black text-primary text-center focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all placeholder:text-primary/30"

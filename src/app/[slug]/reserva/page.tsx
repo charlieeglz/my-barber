@@ -56,6 +56,18 @@ export default function ReservaPage({
 
   const onBookingSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validaciones de datos del cliente
+    if (name.trim().length < 2) {
+      alert("El nombre debe tener al menos 2 caracteres.");
+      return;
+    }
+    const phoneClean = phone.replace(/\s/g, "");
+    if (!/^[6-9]\d{8}$/.test(phoneClean)) {
+      alert("Introduce un teléfono español válido (9 dígitos, empieza por 6, 7, 8 o 9).");
+      return;
+    }
+
     if (!user) {
       setIsPendingBooking(true);
       setShowAuthModal(true);
@@ -66,7 +78,7 @@ export default function ReservaPage({
 
   const executeBooking = async () => {
     if (!user) return;
-    const success = await handleCreateBooking(user.id, name, phone);
+    const success = await handleCreateBooking(user.id, name.trim(), phone.replace(/\s/g, ""));
     if (success) {
       setTimeout(() => {
         router.push("/cliente");

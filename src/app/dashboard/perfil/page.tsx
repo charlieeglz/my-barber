@@ -54,7 +54,11 @@ export default function EditProfilePage() {
             setSlug(data.slug);
             setLocation(data.location || "");
             setNumBarbers(data.num_barbers.toString());
-            setServices(data.services.length > 0 ? data.services : [{ name: "", price: "" }]);
+            setServices(
+              data.services.length > 0
+                ? data.services.map(s => ({ name: s.name, price: String(s.price) }))
+                : [{ name: "", price: "" }]
+            );
           }
         }
       } catch (err) {
@@ -137,19 +141,22 @@ export default function EditProfilePage() {
         }
 
         const filteredServices = services.filter(
-          (s) => s.name.trim() !== "" && s.price.trim() !== ""
+          (s) => s.name.trim() !== "" && s.price !== "" && parseFloat(s.price) > 0
         );
 
         try {
           await barberService.updateBarbershop(barberData.id, {
-            name: barbershopName,
-            full_name: barbershopName,
+            name: barbershopName.trim(),
+            full_name: barbershopName.trim(),
             slug: formattedSlug,
             num_barbers: parseInt(numBarbers) || 1,
-            avatar_url: personalAvatarUrl, // Sync barbershop avatar with owner's avatar
+            avatar_url: personalAvatarUrl,
             cover_url: coverUrl,
             location,
-            services: filteredServices,
+            services: filteredServices.map(s => ({
+              name: s.name.trim(),
+              price: parseFloat(s.price) || 0,
+            })),
           });
         } catch (err: any) {
           throw new Error(`Error al actualizar información de la barbería: ${err.message}`);
@@ -333,9 +340,11 @@ export default function EditProfilePage() {
                         className="flex-1 rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground focus:border-primary focus:outline-none transition-all"
                       />
                       <input
-                        type="text"
+                        type="number"
                         required
-                        placeholder="20€"
+                        min="0"
+                        step="0.5"
+                        placeholder="20"
                         value={service.price}
                         onChange={(e) => handleServiceChange(index, "price", e.target.value)}
                         className="w-24 rounded-xl border border-border bg-background px-4 py-3 text-sm font-black text-primary text-center focus:border-primary focus:outline-none transition-all"

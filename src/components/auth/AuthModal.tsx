@@ -23,13 +23,30 @@ export function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    setLoading(true);
 
+    // Validaciones cliente
+    if (!isLogin) {
+      if (name.trim().length < 2) {
+        setError("El nombre debe tener al menos 2 caracteres.");
+        return;
+      }
+      const phoneClean = phone.replace(/\s/g, "");
+      if (!/^[6-9]\d{8}$/.test(phoneClean)) {
+        setError("Introduce un teléfono español válido (9 dígitos, empieza por 6, 7, 8 o 9).");
+        return;
+      }
+    }
+    if (password.length < 8) {
+      setError("La contraseña debe tener al menos 8 caracteres.");
+      return;
+    }
+
+    setLoading(true);
     try {
       if (isLogin) {
         await authService.signIn(email, password);
       } else {
-        await authService.signUp(email, password, name, "client", phone);
+        await authService.signUp(email, password, name.trim(), "client", phone.replace(/\s/g, ""));
       }
       onSuccess();
     } catch (err: any) {

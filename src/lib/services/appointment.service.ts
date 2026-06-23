@@ -96,6 +96,20 @@ export const appointmentService = {
   },
 
   async create(data: CreateAppointmentData) {
+    // Comprobación anti-colisión: verificar que el slot sigue libre antes de insertar
+    const { data: existing, error: checkError } = await supabase
+      .from("appointments")
+      .select("id")
+      .eq("staff_id", data.staff_id)
+      .eq("appointment_date", data.appointment_date)
+      .neq("status", "cancelled")
+      .maybeSingle();
+
+    if (checkError) throw checkError;
+    if (existing) {
+      throw new Error("Este horario acaba de ser reservado por otro cliente. Por favor, elige otro.");
+    }
+
     const { data: appointment, error } = await supabase
       .from("appointments")
       .insert([data])

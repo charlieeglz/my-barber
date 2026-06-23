@@ -114,10 +114,12 @@ export default function ClienteDashboard() {
                       className={`rounded-full px-3 py-1 text-[10px] font-bold uppercase tracking-wider border ${
                         apt.status === "completed"
                           ? "bg-primary/10 text-primary border-primary/20"
-                          : "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
+                          : apt.status === "cancelled"
+                            ? "bg-red-500/10 text-red-400 border-red-500/20"
+                            : "bg-yellow-500/10 text-yellow-500 border-yellow-500/20"
                       }`}
                     >
-                      {apt.status === "completed" ? "Finalizada" : "Pendiente"}
+                      {dateUtils.getStatusLabel(apt.status)}
                     </span>
                   </div>
                   

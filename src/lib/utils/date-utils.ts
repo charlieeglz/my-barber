@@ -102,5 +102,32 @@ export const dateUtils = {
       daysArray: Array.from({ length: daysInMonth }, (_, i) => i + 1),
       blanksArray: Array.from({ length: firstDayOffset }, (_, i) => i),
     };
-  }
+  },
+
+  /**
+   * Formatea un precio numérico (en euros) a string con símbolo de moneda.
+   * Ej: 20 => "20 €", 15.5 => "15,50 €"
+   */
+  formatPrice(price: number | string): string {
+    const num = typeof price === "string" ? parseFloat(price.replace(",", ".")) : price;
+    if (isNaN(num)) return "—";
+    return num.toLocaleString("es-ES", {
+      style: "currency",
+      currency: "EUR",
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 2,
+    });
+  },
+
+  /**
+   * Traduce el estado de una cita al español.
+   */
+  getStatusLabel(status: string): string {
+    const labels: Record<string, string> = {
+      pending: "Pendiente",
+      completed: "Finalizada",
+      cancelled: "Cancelada",
+    };
+    return labels[status] ?? status;
+  },
 };

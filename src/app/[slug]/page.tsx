@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useBooking } from "@/hooks/useBooking";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthModal } from "@/components/auth/AuthModal";
+import { dateUtils } from "@/lib/utils/date-utils";
 
 export default function BarberProfile({
   params,
@@ -139,7 +140,7 @@ export default function BarberProfile({
                         {service.name}
                       </span>
                       <span className="rounded-xl bg-primary/10 px-4 py-1.5 font-black text-primary border border-primary/10">
-                        {service.price}
+                        {dateUtils.formatPrice(service.price)}
                       </span>
                     </div>
                   ))
