@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { useBooking } from "@/hooks/useBooking";
 import { AuthModal } from "@/components/auth/AuthModal";
+import { dateUtils } from "@/lib/utils/date-utils";
 import Image from "next/image";
 
 export default function ReservaPage({
@@ -169,7 +170,7 @@ export default function ReservaPage({
                 <input
                   type="date"
                   required
-                  min={new Date().toISOString().split("T")[0]}
+                  min={dateUtils.getTodayString()}
                   value={selectedDate}
                   onChange={(e) => {
                     setSelectedDate(e.target.value);

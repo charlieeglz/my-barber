@@ -48,7 +48,12 @@ export const dateUtils = {
    * filtrando las horas pasadas si la fecha es hoy y excluyendo las ya reservadas.
    */
   getAvailableSlots(date: string, bookedTimes: string[]) {
+    if (!date) return [];
     const today = this.getTodayString();
+    
+    // Si la fecha seleccionada es en el pasado, no hay disponibilidad
+    if (date < today) return [];
+
     const isToday = date === today;
 
     return WORKING_HOURS.filter((time) => {
