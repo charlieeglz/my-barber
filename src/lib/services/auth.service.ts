@@ -93,6 +93,29 @@ export const authService = {
     return profile;
   },
 
+  async resetPassword(email: string) {
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/login/reset`,
+    });
+    if (error) throw error;
+  },
+
+  async signInWithGoogle(role: "barber" | "client" = "client") {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+        queryParams: {
+          // Pasamos el rol como hint para el callback
+          access_type: "offline",
+          prompt: "select_account",
+        },
+        scopes: "openid email profile",
+      },
+    });
+    if (error) throw error;
+  },
+
   async signOut() {
     const { error } = await supabase.auth.signOut();
     if (error) throw error;

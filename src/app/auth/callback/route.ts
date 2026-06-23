@@ -8,7 +8,7 @@ export async function GET(request: Request) {
   const next = searchParams.get("next") ?? "/cliente";
 
   if (code) {
-    const cookieStore = await cookies(); // Necesita await en Next.js moderno
+    const cookieStore = await cookies();
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -26,8 +26,18 @@ export async function GET(request: Request) {
         },
       },
     );
-    await supabase.auth.exchangeCodeForSession(code);
+
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+
+    if (!error) {
+      // Redirigir según el rol del usuario
+      const { data: { user } } = await supabase.auth.getUser();
+      const role = user?.user_metadata?.role;
+      const destination = role === "barber" ? "/dashboard" : next;
+      return NextResponse.redirect(`${origin}${destination}`);
+    }
   }
 
-  return NextResponse.redirect(`${origin}${next}`);
+  // Si algo falla, volver al login
+  return NextResponse.redirect(`${origin}/login?error=auth_callback_error`);
 }
