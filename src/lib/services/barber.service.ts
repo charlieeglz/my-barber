@@ -34,6 +34,16 @@ export type StaffMember = {
 // Mantenemos BarberProfile como alias de Barbershop para compatibilidad temporal
 export type BarberProfile = Barbershop;
 
+export type PortfolioPhoto = {
+  id: string;
+  barber_id: string;
+  appointment_id: string;
+  image_url: string;
+  staff_id: string;
+  is_visible: boolean;
+  created_at?: string;
+};
+
 export type CreateBarbershopData = Omit<Barbershop, "id" | "created_at">;
 
 export const barberService = {
@@ -153,7 +163,8 @@ export const barberService = {
 
   // --- PORTFOLIO ---
 
-  async getPortfolioPhotos(barberId: string, staffId?: string) {
+  // onlyVisible=true para la vista pública; false para gestión en el dashboard
+  async getPortfolioPhotos(barberId: string, staffId?: string, onlyVisible = true) {
     let query = supabase
       .from("portfolio_photos")
       .select("*")
@@ -163,10 +174,23 @@ export const barberService = {
       query = query.eq("staff_id", staffId);
     }
 
+    if (onlyVisible) {
+      query = query.eq("is_visible", true);
+    }
+
     const { data, error } = await query.order("created_at", { ascending: false });
 
     if (error) throw error;
-    return data;
+    return data as PortfolioPhoto[];
+  },
+
+  async togglePhotoVisibility(photoId: string, isVisible: boolean) {
+    const { error } = await supabase
+      .from("portfolio_photos")
+      .update({ is_visible: isVisible })
+      .eq("id", photoId);
+
+    if (error) throw error;
   },
 
   async addPortfolioPhoto(barberId: string, appointmentId: string, imageUrl: string, staffId: string) {

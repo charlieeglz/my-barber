@@ -1,12 +1,12 @@
 import { useState, useEffect } from "react";
-import { barberService, Barbershop, StaffMember } from "../lib/services/barber.service";
+import { barberService, Barbershop, StaffMember, PortfolioPhoto } from "../lib/services/barber.service";
 import { appointmentService } from "../lib/services/appointment.service";
 import { dateUtils } from "../lib/utils/date-utils";
 
 export function useBooking(barberSlug: string) {
   const [barber, setBarber] = useState<Barbershop | null>(null);
   const [staff, setStaff] = useState<StaffMember[]>([]);
-  const [photos, setPhotos] = useState<any[]>([]);
+  const [photos, setPhotos] = useState<PortfolioPhoto[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
