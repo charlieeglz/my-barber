@@ -102,8 +102,8 @@ export function useBooking(barberSlug: string) {
     }
   };
 
-  const availableSlots = selectedDate 
-    ? dateUtils.getAvailableSlots(selectedDate, bookedTimes)
+  const availableSlots = selectedDate
+    ? dateUtils.getAvailableSlots(selectedDate, bookedTimes, barber?.working_hours)
     : [];
 
   return {

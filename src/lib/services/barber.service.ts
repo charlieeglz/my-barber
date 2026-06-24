@@ -5,6 +5,14 @@ export type BarberService = {
   price: number; // en euros (ej: 20, 15.5)
 };
 
+export type WorkingHours = {
+  days: number[];        // 0=Dom, 1=Lun, 2=Mar, 3=Mié, 4=Jue, 5=Vie, 6=Sáb
+  morning_start: string; // "10:00"
+  morning_end: string;   // "14:00"
+  afternoon_start: string; // "16:00"
+  afternoon_end: string;   // "20:00"
+};
+
 export type Barbershop = {
   id: string;
   user_id: string;
@@ -16,6 +24,7 @@ export type Barbershop = {
   cover_url: string | null;
   location: string | null;
   services: BarberService[];
+  working_hours?: WorkingHours | null;
   created_at?: string;
 };
 

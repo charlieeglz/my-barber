@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
 import { barberService, Barbershop, PortfolioPhoto } from "@/lib/services/barber.service";
 import { storageService } from "@/lib/services/storage.service";
+import { authService } from "@/lib/services/auth.service";
 
 type ServiceInput = {
   name: string;
@@ -40,6 +41,9 @@ export default function EditProfilePage() {
   const [portfolioPhotos, setPortfolioPhotos] = useState<PortfolioPhoto[]>([]);
   const [loadingPhotos, setLoadingPhotos] = useState(false);
   const [togglingId, setTogglingId] = useState<string | null>(null);
+
+  // Password reset
+  const [passwordResetSent, setPasswordResetSent] = useState(false);
 
   const isOwner = profile?.staffInfo?.role === "owner";
 
@@ -112,6 +116,17 @@ export default function EditProfilePage() {
       console.error("Error al cambiar visibilidad:", err);
     } finally {
       setTogglingId(null);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!user?.email) return;
+    try {
+      await authService.resetPassword(user.email);
+      setPasswordResetSent(true);
+      setTimeout(() => setPasswordResetSent(false), 6000);
+    } catch (err) {
+      console.error("Error enviando email de recuperación:", err);
     }
   };
 
@@ -275,6 +290,25 @@ export default function EditProfilePage() {
                     className="block w-full text-xs text-muted-foreground file:mr-4 file:rounded-xl file:border-0 file:bg-primary file:px-4 file:py-2.5 file:text-xs file:font-black file:text-primary-foreground hover:file:bg-primary/90 cursor-pointer"
                   />
                 </div>
+              </div>
+
+              {/* Cambiar contraseña */}
+              <div className="flex items-center justify-between rounded-xl border border-border bg-background/40 px-4 py-3">
+                <div>
+                  <p className="text-sm font-bold text-foreground">Contraseña</p>
+                  <p className="text-xs text-muted-foreground">Recibirás un enlace en tu email para cambiarla.</p>
+                </div>
+                {passwordResetSent ? (
+                  <span className="text-xs font-bold text-green-500">✓ Email enviado</span>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleChangePassword}
+                    className="text-xs font-black text-primary hover:underline"
+                  >
+                    Cambiar →
+                  </button>
+                )}
               </div>
             </div>
           </section>

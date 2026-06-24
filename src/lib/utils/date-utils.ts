@@ -1,11 +1,31 @@
 /**
  * Utilidades para el manejo de fechas y horarios en la barbería.
  */
+import type { WorkingHours } from "@/lib/services/barber.service";
 
 export const WORKING_HOURS = [
   "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30",
   "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30",
 ];
+
+/**
+ * Genera slots de 30 minutos entre dos horas (start inclusivo, end exclusivo).
+ * Ejemplo: generateTimeSlots("10:00", "14:00") => ["10:00", "10:30", "11:00", ...]
+ */
+function generateTimeSlots(start: string, end: string): string[] {
+  const slots: string[] = [];
+  const [sh, sm] = start.split(":").map(Number);
+  const [eh, em] = end.split(":").map(Number);
+  let current = sh * 60 + sm;
+  const endMinutes = eh * 60 + em;
+  while (current < endMinutes) {
+    const h = Math.floor(current / 60);
+    const m = current % 60;
+    slots.push(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
+    current += 30;
+  }
+  return slots;
+}
 
 export const dateUtils = {
   /**
@@ -44,31 +64,43 @@ export const dateUtils = {
   },
 
   /**
-   * Genera los slots de tiempo disponibles para una fecha específica,
-   * filtrando las horas pasadas si la fecha es hoy y excluyendo las ya reservadas.
+   * Genera los slots de tiempo disponibles para una fecha específica.
+   * Si se pasa workingHours, usa las horas configuradas por el barbero.
+   * Si no, cae en el horario por defecto (WORKING_HOURS).
    */
-  getAvailableSlots(date: string, bookedTimes: string[]) {
+  getAvailableSlots(date: string, bookedTimes: string[], workingHours?: WorkingHours | null) {
     if (!date) return [];
     const today = this.getTodayString();
-    
+
     // Si la fecha seleccionada es en el pasado, no hay disponibilidad
     if (date < today) return [];
 
+    let slots: string[];
+
+    if (workingHours) {
+      // Comprobar si el día de la semana está dentro de los días laborables
+      const [year, month, day] = date.split("-").map(Number);
+      const dayOfWeek = new Date(Date.UTC(year, month - 1, day)).getDay();
+      if (!workingHours.days.includes(dayOfWeek)) return [];
+
+      slots = [
+        ...generateTimeSlots(workingHours.morning_start, workingHours.morning_end),
+        ...generateTimeSlots(workingHours.afternoon_start, workingHours.afternoon_end),
+      ];
+    } else {
+      slots = [...WORKING_HOURS];
+    }
+
     const isToday = date === today;
 
-    return WORKING_HOURS.filter((time) => {
-      // 1. Excluir si ya está reservado
+    return slots.filter((time) => {
       if (bookedTimes.includes(time)) return false;
 
-      // 2. Si es hoy, excluir horas que ya pasaron
       if (isToday) {
         const [hour, minute] = time.split(":").map(Number);
         const now = new Date();
-        const currentHour = now.getHours();
-        const currentMinute = now.getMinutes();
-
-        if (hour < currentHour) return false;
-        if (hour === currentHour && minute <= currentMinute) return false;
+        if (hour < now.getHours()) return false;
+        if (hour === now.getHours() && minute <= now.getMinutes()) return false;
       }
 
       return true;
