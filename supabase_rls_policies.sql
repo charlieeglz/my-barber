@@ -158,12 +158,123 @@ WITH CHECK (
   )
 );
 
--- Permitir eliminar fotos del portfolio
-CREATE POLICY "Permitir eliminación de fotos al dueño o staff" 
-ON portfolio_photos FOR DELETE 
+-- Permitir actualización de visibilidad de fotos (is_visible)
+CREATE POLICY "Permitir actualización de fotos al dueño o staff"
+ON portfolio_photos FOR UPDATE
 USING (
   EXISTS (
-    SELECT 1 FROM barbershops 
+    SELECT 1 FROM barbershops
     WHERE id = portfolio_photos.barber_id AND user_id = auth.uid()
   )
+  OR EXISTS (
+    SELECT 1 FROM staff
+    WHERE id = portfolio_photos.staff_id AND user_id = auth.uid()
+  )
+);
+
+
+-- ==========================================
+-- 5. POLÍTICAS PARA SUPABASE STORAGE (Buckets de imágenes)
+-- ==========================================
+-- ⚠️  IMPORTANTE: Antes de ejecutar estas políticas asegúrate de que
+--     existan los buckets. Si no los has creado aún, ve a
+--     Storage → New bucket y crea:
+--       - "avatars"   (public: true)
+--       - "covers"    (public: true)
+--       - "portfolio" (public: true)
+-- ==========================================
+
+-- ---- Bucket: avatars (fotos de perfil del barbero) ----
+
+CREATE POLICY "Avatars: lectura pública"
+ON storage.objects FOR SELECT
+USING (bucket_id = 'avatars');
+
+CREATE POLICY "Avatars: subida para usuarios autenticados"
+ON storage.objects FOR INSERT
+WITH CHECK (
+  bucket_id = 'avatars'
+  AND auth.role() = 'authenticated'
+);
+
+CREATE POLICY "Avatars: actualización por el propietario del archivo"
+ON storage.objects FOR UPDATE
+USING (
+  bucket_id = 'avatars'
+  AND auth.uid()::text = (storage.foldername(name))[1]
+)
+WITH CHECK (
+  bucket_id = 'avatars'
+  AND auth.role() = 'authenticated'
+);
+
+CREATE POLICY "Avatars: eliminación por el propietario del archivo"
+ON storage.objects FOR DELETE
+USING (
+  bucket_id = 'avatars'
+  AND auth.uid()::text = (storage.foldername(name))[1]
+);
+
+
+-- ---- Bucket: covers (fotos de portada de la barbería) ----
+
+CREATE POLICY "Covers: lectura pública"
+ON storage.objects FOR SELECT
+USING (bucket_id = 'covers');
+
+CREATE POLICY "Covers: subida para usuarios autenticados"
+ON storage.objects FOR INSERT
+WITH CHECK (
+  bucket_id = 'covers'
+  AND auth.role() = 'authenticated'
+);
+
+CREATE POLICY "Covers: actualización por el propietario del archivo"
+ON storage.objects FOR UPDATE
+USING (
+  bucket_id = 'covers'
+  AND auth.uid()::text = (storage.foldername(name))[1]
+)
+WITH CHECK (
+  bucket_id = 'covers'
+  AND auth.role() = 'authenticated'
+);
+
+CREATE POLICY "Covers: eliminación por el propietario del archivo"
+ON storage.objects FOR DELETE
+USING (
+  bucket_id = 'covers'
+  AND auth.uid()::text = (storage.foldername(name))[1]
+);
+
+
+-- ---- Bucket: portfolio (fotos de resultados de citas) ----
+
+CREATE POLICY "Portfolio: lectura pública"
+ON storage.objects FOR SELECT
+USING (bucket_id = 'portfolio');
+
+CREATE POLICY "Portfolio: subida para usuarios autenticados"
+ON storage.objects FOR INSERT
+WITH CHECK (
+  bucket_id = 'portfolio'
+  AND auth.role() = 'authenticated'
+);
+
+CREATE POLICY "Portfolio: actualización por el propietario del archivo"
+ON storage.objects FOR UPDATE
+USING (
+  bucket_id = 'portfolio'
+  AND auth.uid()::text = (storage.foldername(name))[1]
+)
+WITH CHECK (
+  bucket_id = 'portfolio'
+  AND auth.role() = 'authenticated'
+);
+
+CREATE POLICY "Portfolio: eliminación por el propietario del archivo"
+ON storage.objects FOR DELETE
+USING (
+  bucket_id = 'portfolio'
+  AND auth.uid()::text = (storage.foldername(name))[1]
 );
