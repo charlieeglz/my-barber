@@ -10,6 +10,7 @@ import Link from "next/link";
 type ServiceInput = {
   name: string;
   price: string;
+  duration: string;
 };
 
 type ExtraStaffInput = {
@@ -48,7 +49,7 @@ export default function OnboardingPage() {
   const [afternoonEnd, setAfternoonEnd] = useState("20:00");
 
   // — Sección 4: Servicios —
-  const [services, setServices] = useState<ServiceInput[]>([{ name: "", price: "" }]);
+  const [services, setServices] = useState<ServiceInput[]>([{ name: '', price: '', duration: '30' }]);
 
   // — Sección 5: Equipo extra (si numBarbers > 1) —
   const [extraStaff, setExtraStaff] = useState<ExtraStaffInput[]>([]);
@@ -170,6 +171,7 @@ export default function OnboardingPage() {
         services: filteredServices.map((s) => ({
           name: s.name.trim(),
           price: parseFloat(s.price) || 0,
+          duration_minutes: parseInt(s.duration) || 30,
         })),
         working_hours: workingHours,
       });
@@ -217,7 +219,7 @@ export default function OnboardingPage() {
       <div className="w-full max-w-2xl">
         <div className="mb-12 text-center">
           <Link href="/" className="mb-8 inline-block text-3xl font-black tracking-tighter text-foreground">
-            Barber<span className="text-primary">App</span>
+            Be<span className="text-primary">Style</span>
           </Link>
           <h1 className="text-3xl font-black text-foreground md:text-4xl">Configura tu Barbería</h1>
           <p className="mt-3 text-lg text-muted-foreground">Crea tu perfil profesional y empieza a recibir citas.</p>
@@ -349,7 +351,7 @@ export default function OnboardingPage() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               {/* Turno mañana */}
               <div className="space-y-3 rounded-2xl border border-border bg-background/40 p-4">
-                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">☀️ Turno Mañana</p>
+                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Turno Mañana</p>
                 <div className="flex items-center gap-2">
                   <select
                     value={morningStart}
@@ -375,7 +377,7 @@ export default function OnboardingPage() {
 
               {/* Turno tarde */}
               <div className="space-y-3 rounded-2xl border border-border bg-background/40 p-4">
-                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">🌆 Turno Tarde</p>
+                <p className="text-xs font-black uppercase tracking-widest text-muted-foreground">Turno Tarde</p>
                 <div className="flex items-center gap-2">
                   <select
                     value={afternoonStart}
@@ -400,9 +402,9 @@ export default function OnboardingPage() {
               </div>
             </div>
 
-            <p className="text-xs text-muted-foreground/60">
-              💡 Solo se mostrará el turno de mañana si hay horas disponibles. Para un solo turno, pon el mismo horario en ambos campos del turno que no quieras usar.
-            </p>
+              <p className="text-xs text-muted-foreground/60">
+                Solo se mostrará el turno de mañana si hay horas disponibles. Para un solo turno, pon el mismo horario en ambos campos del turno que no quieras usar.
+              </p>
           </div>
 
           {/* ── SECCIÓN 4: Servicios ── */}
@@ -414,7 +416,7 @@ export default function OnboardingPage() {
               </h2>
               <button
                 type="button"
-                onClick={() => setServices([...services, { name: "", price: "" }])}
+                onClick={() => setServices([...services, { name: '', price: '', duration: '30' }])}
                 className="text-xs font-black uppercase tracking-widest text-primary hover:underline"
               >
                 + Añadir
@@ -444,6 +446,21 @@ export default function OnboardingPage() {
                       className="block w-full rounded-xl border border-border bg-background px-4 py-3 text-center text-sm font-black text-primary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all placeholder:text-primary/30"
                     />
                     <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-black text-primary/50">€</span>
+                  </div>
+                  <div className="w-28">
+                    <select
+                      value={service.duration}
+                      onChange={(e) => handleServiceChange(index, "duration", e.target.value)}
+                      className="block w-full rounded-xl border border-border bg-background px-3 py-3 text-sm font-bold text-muted-foreground focus:border-primary focus:outline-none transition-all"
+                    >
+                      <option value="15">15 min</option>
+                      <option value="30">30 min</option>
+                      <option value="45">45 min</option>
+                      <option value="60">1h</option>
+                      <option value="75">1h 15m</option>
+                      <option value="90">1h 30m</option>
+                      <option value="120">2h</option>
+                    </select>
                   </div>
                   {services.length > 1 && (
                     <button

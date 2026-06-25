@@ -8,7 +8,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "BarberApp | Excelencia en el Cuidado Personal",
+  title: "BeStyle | Excelencia en el Cuidado Personal",
   description: "La plataforma definitiva para gestionar tus citas y encontrar a los mejores profesionales de la barbería.",
 };
 

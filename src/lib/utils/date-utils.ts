@@ -3,9 +3,17 @@
  */
 import type { WorkingHours } from "@/lib/services/barber.service";
 
+/**
+ * Horario por defecto (fallback) cuando el barbero no tiene horario configurado.
+ * Cubre de 09:00 a 21:00 en franjas de 30 min.
+ * Se utiliza SOLO como último recurso; el horario real del barbero siempre tiene prioridad.
+ */
 export const WORKING_HOURS = [
+  "09:00", "09:30",
   "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30",
+  "14:00", "14:30", "15:00", "15:30",
   "16:00", "16:30", "17:00", "17:30", "18:00", "18:30", "19:00", "19:30",
+  "20:00", "20:30",
 ];
 
 /**
@@ -45,12 +53,11 @@ export const dateUtils = {
   formatFriendlyDate(isoDate: string) {
     const [datePart] = isoDate.split("T");
     const [year, month, day] = datePart.split("-").map(Number);
-    const date = new Date(Date.UTC(year, month - 1, day));
+    const date = new Date(year, month - 1, day);
     return date.toLocaleDateString("es-ES", {
       weekday: "long",
       day: "numeric",
-      month: "long",
-      timeZone: "UTC"
+      month: "long"
     });
   },
 
@@ -58,9 +65,10 @@ export const dateUtils = {
    * Formatea una fecha ISO a hora (ej: "10:30").
    */
   formatFriendlyTime(isoDate: string) {
-    const timePart = isoDate.split("T")[1];
-    if (!timePart) return "";
-    return timePart.substring(0, 5); // Retorna "HH:mm" directamente
+    const d = new Date(isoDate.replace('Z', ''));
+    const h = String(d.getHours()).padStart(2, '0');
+    const m = String(d.getMinutes()).padStart(2, '0');
+    return `${h}:${m}`;
   },
 
   /**
@@ -68,19 +76,17 @@ export const dateUtils = {
    * Si se pasa workingHours, usa las horas configuradas por el barbero.
    * Si no, cae en el horario por defecto (WORKING_HOURS).
    */
-  getAvailableSlots(date: string, bookedTimes: string[], workingHours?: WorkingHours | null) {
+  getAvailableSlots(date: string, bookedTimes: string[], workingHours?: WorkingHours | null, durationMinutes: number = 30) {
     if (!date) return [];
     const today = this.getTodayString();
 
-    // Si la fecha seleccionada es en el pasado, no hay disponibilidad
     if (date < today) return [];
 
     let slots: string[];
 
     if (workingHours) {
-      // Comprobar si el día de la semana está dentro de los días laborables
       const [year, month, day] = date.split("-").map(Number);
-      const dayOfWeek = new Date(Date.UTC(year, month - 1, day)).getDay();
+      const dayOfWeek = new Date(year, month - 1, day).getDay();
       if (!workingHours.days.includes(dayOfWeek)) return [];
 
       slots = [
@@ -92,15 +98,38 @@ export const dateUtils = {
     }
 
     const isToday = date === today;
+    const slotsNeeded = Math.max(1, Math.ceil(durationMinutes / 30));
 
-    return slots.filter((time) => {
-      if (bookedTimes.includes(time)) return false;
+    // Construir un Set de minutos válidos para verificar consecutividad real
+    const slotMinutesSet = new Set(
+      slots.map((t) => {
+        const [h, m] = t.split(":").map(Number);
+        return h * 60 + m;
+      })
+    );
 
+    return slots.filter((time, index) => {
+      // Filtrar horas pasadas si es hoy
       if (isToday) {
         const [hour, minute] = time.split(":").map(Number);
         const now = new Date();
         if (hour < now.getHours()) return false;
         if (hour === now.getHours() && minute <= now.getMinutes()) return false;
+      }
+
+      // Verificar que todos los slots consecutivos necesarios:
+      // 1. Existen en el horario del barbero (no cruzan un descanso)
+      // 2. No están ocupados
+      const [sh, sm] = time.split(":").map(Number);
+      const startMin = sh * 60 + sm;
+
+      for (let i = 0; i < slotsNeeded; i++) {
+        const checkMin = startMin + i * 30;
+        // El slot requerido no existe en el horario (p.ej. cae en descanso o tras el cierre)
+        if (!slotMinutesSet.has(checkMin)) return false;
+        // El slot requerido está ocupado
+        const checkTime = `${String(Math.floor(checkMin / 60)).padStart(2, "0")}:${String(checkMin % 60).padStart(2, "0")}`;
+        if (bookedTimes.includes(checkTime)) return false;
       }
 
       return true;
@@ -111,7 +140,7 @@ export const dateUtils = {
    * Combina una fecha (YYYY-MM-DD) y una hora (HH:mm) en un string ISO.
    */
   combineDateAndTime(date: string, time: string) {
-    return `${date}T${time}:00.000Z`;
+    return `${date}T${time}:00`;
   },
 
   /**

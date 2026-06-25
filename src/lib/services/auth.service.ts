@@ -104,9 +104,9 @@ export const authService = {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        // Pasamos el rol en el redirectTo para que el callback lo recoja
+        redirectTo: `${window.location.origin}/auth/callback?role=${role}`,
         queryParams: {
-          // Pasamos el rol como hint para el callback
           access_type: "offline",
           prompt: "select_account",
         },

@@ -3,6 +3,7 @@ import { supabase } from "../supabase";
 export type BarberService = {
   name: string;
   price: number; // en euros (ej: 20, 15.5)
+  duration_minutes: number; // Duración en minutos, ej: 30, 60, 90
 };
 
 export type WorkingHours = {

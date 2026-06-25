@@ -41,7 +41,11 @@ export default function BarberProfile({
     return (
       <div className="flex min-h-screen flex-col items-center justify-center bg-background p-6">
         <div className="text-center">
-          <div className="mb-6 text-6xl">💈</div>
+          <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-muted text-muted-foreground">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-8 w-8">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.182 15.182a4.5 4.5 0 0 1-6.364 0M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0ZM9.75 9.75c0 .414-.168.75-.375.75S9 10.164 9 9.75 9.168 9 9.375 9s.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Zm5.625 0c0 .414-.168.75-.375.75s-.375-.336-.375-.75.168-.75.375-.75.375.336.375.75Zm-.375 0h.008v.015h-.008V9.75Z" />
+            </svg>
+          </div>
           <h1 className="mb-2 text-2xl font-bold text-foreground">Barbería no encontrada</h1>
           <p className="mb-8 text-muted-foreground">Lo sentimos, el perfil que buscas no existe o ha sido movido.</p>
           <Link href="/explorar" className="inline-flex items-center rounded-xl bg-primary px-6 py-3 font-bold text-primary-foreground transition-all hover:scale-[1.02]">
@@ -124,32 +128,56 @@ export default function BarberProfile({
           {/* Columna Principal: Servicios y Portfolio */}
           <div className="lg:col-span-8">
             {/* Servicios */}
-            <section className="mb-16">
-              <div className="mb-8 flex items-center justify-between">
-                <h2 className="text-2xl font-black tracking-tight text-foreground">Servicios</h2>
-                <div className="h-px flex-1 bg-border mx-6 hidden sm:block" />
+            <section className="mb-12">
+              <div className="mb-5 flex items-center gap-4">
+                <h2 className="text-xl font-black tracking-tight text-foreground sm:text-2xl">Servicios y Tarifas</h2>
+                <div className="h-px flex-1 bg-border" />
               </div>
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                {barber?.services && barber.services.length > 0 ? (
-                  barber.services.map((service, index) => (
+
+              {barber?.services && barber.services.length > 0 ? (
+                <div className="flex flex-col gap-2">
+                  {barber.services.map((service, index) => (
                     <div
                       key={index}
-                      className="group flex items-center justify-between rounded-2xl border border-border bg-secondary/30 p-5 transition-all hover:bg-secondary"
+                      className="flex w-full items-center rounded-xl border border-border bg-secondary/30 px-4 py-3 transition-all hover:bg-secondary"
                     >
-                      <span className="font-bold text-foreground group-hover:text-primary transition-colors">
-                        {service.name}
-                      </span>
-                      <span className="rounded-xl bg-primary/10 px-4 py-1.5 font-black text-primary border border-primary/10">
+                      {/* Icono decorativo */}
+                      <div className="mr-3 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-3.5 w-3.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="m7.848 8.25 1.536.887M7.848 8.25a3 3 0 1 1-5.196-3 3 3 0 0 1 5.196 3Zm1.536.887a2.165 2.165 0 0 1 1.083 1.839c.005.351.054.695.14 1.024M9.384 9.137l2.077 1.199M7.848 15.75l1.536-.887m-1.536.887a3 3 0 1 1-5.196 3 3 3 0 0 1 5.196-3Zm1.536-.887a2.165 2.165 0 0 1 1.083-1.839 8.054 8.054 0 0 0 .112-1.02M9.384 14.863l7.552-4.36M18.75 9a3 3 0 1 1-5.196-3 3 3 0 0 1 5.196 3Zm0 0a3 3 0 1 1 5.196 3 3 3 0 0 1-5.196-3Z" />
+                        </svg>
+                      </div>
+
+                      {/* Nombre + duración */}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-bold text-foreground">{service.name}</p>
+                        {service.duration_minutes && (
+                          <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
+                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-3 w-3 shrink-0">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                            </svg>
+                            {service.duration_minutes < 60
+                              ? `${service.duration_minutes} min`
+                              : service.duration_minutes % 60 === 0
+                                ? `${Math.floor(service.duration_minutes / 60)}h`
+                                : `${Math.floor(service.duration_minutes / 60)}h ${service.duration_minutes % 60}min`
+                            }
+                          </p>
+                        )}
+                      </div>
+
+                      {/* Precio — siempre a la derecha, nunca se oculta */}
+                      <span className="ml-3 shrink-0 rounded-lg bg-primary/10 px-3 py-1 text-sm font-black text-primary">
                         {dateUtils.formatPrice(service.price)}
                       </span>
                     </div>
-                  ))
-                ) : (
-                  <p className="col-span-full text-center py-12 text-muted-foreground italic bg-secondary/20 rounded-3xl border border-dashed border-border">
-                    No hay servicios listados actualmente.
-                  </p>
-                )}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="rounded-2xl border border-dashed border-border bg-secondary/20 py-10 text-center text-sm text-muted-foreground italic">
+                  No hay servicios listados actualmente.
+                </p>
+              )}
             </section>
 
             {/* Portfolio */}
@@ -160,7 +188,12 @@ export default function BarberProfile({
               </div>
               {photos.length === 0 ? (
                 <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-secondary/10 p-16 text-center text-muted-foreground">
-                  <div className="mb-4 text-4xl">📸</div>
+                  <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
+                    </svg>
+                  </div>
                   <p className="font-medium">Aún no hay trabajos en la galería.</p>
                 </div>
               ) : (

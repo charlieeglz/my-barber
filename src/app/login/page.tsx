@@ -121,7 +121,7 @@ function LoginContent() {
     <div className="w-full max-w-md">
       <div className="mb-12 text-center">
         <Link href="/" className="mb-8 inline-block text-3xl font-black tracking-tighter text-foreground">
-          Barber<span className="text-primary">App</span>
+          Be<span className="text-primary">Style</span>
         </Link>
         <h1 className="text-2xl font-bold text-foreground">
           {isLogin ? "Bienvenido de nuevo" : "Crea tu cuenta profesional"}
@@ -287,7 +287,13 @@ function LoginContent() {
           <div className="w-full max-w-sm rounded-3xl border border-border bg-background p-8 shadow-2xl animate-in fade-in zoom-in-95">
             {resetSent ? (
               <div className="space-y-4 text-center">
-                <div className="text-4xl">📬</div>
+                <div className="flex justify-center">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary/10 text-primary">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-7 w-7">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
+                    </svg>
+                  </div>
+                </div>
                 <h2 className="text-lg font-black text-foreground">¡Email enviado!</h2>
                 <p className="text-sm text-muted-foreground">
                   Revisa tu bandeja de entrada en <span className="font-bold text-primary">{resetEmail}</span> y haz clic en el enlace para crear tu nueva contraseña.

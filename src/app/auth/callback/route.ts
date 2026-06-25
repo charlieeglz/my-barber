@@ -5,6 +5,7 @@ import { createServerClient, type CookieOptions } from "@supabase/ssr";
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
+  const roleParam = searchParams.get("role") as "barber" | "client" | null;
   const next = searchParams.get("next") ?? "/cliente";
 
   if (code) {
@@ -30,10 +31,23 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
-      // Redirigir según el rol del usuario
       const { data: { user } } = await supabase.auth.getUser();
-      const role = user?.user_metadata?.role;
-      const destination = role === "barber" ? "/dashboard" : next;
+
+      // Si el usuario no tiene rol aún (primer login con Google) y se pasó un rol,
+      // lo guardamos en los metadatos del usuario
+      const existingRole = user?.user_metadata?.role;
+      const resolvedRole = existingRole || roleParam || "client";
+
+      if (!existingRole && roleParam) {
+        await supabase.auth.updateUser({
+          data: {
+            role: roleParam,
+            full_name: user?.user_metadata?.full_name || user?.user_metadata?.name || "",
+          },
+        });
+      }
+
+      const destination = resolvedRole === "barber" ? "/dashboard" : next;
       return NextResponse.redirect(`${origin}${destination}`);
     }
   }

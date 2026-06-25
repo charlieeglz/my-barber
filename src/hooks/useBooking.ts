@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { barberService, Barbershop, StaffMember, PortfolioPhoto } from "../lib/services/barber.service";
+import { barberService, Barbershop, StaffMember, PortfolioPhoto, BarberService } from "../lib/services/barber.service";
 import { appointmentService } from "../lib/services/appointment.service";
 import { dateUtils } from "../lib/utils/date-utils";
 
@@ -12,6 +12,7 @@ export function useBooking(barberSlug: string) {
 
   // Estados de la reserva
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
+  const [selectedService, setSelectedService] = useState<BarberService | null>(null);
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedTime, setSelectedTime] = useState("");
   const [bookedTimes, setBookedTimes] = useState<string[]>([]);
@@ -103,7 +104,7 @@ export function useBooking(barberSlug: string) {
   };
 
   const availableSlots = selectedDate
-    ? dateUtils.getAvailableSlots(selectedDate, bookedTimes, barber?.working_hours)
+    ? dateUtils.getAvailableSlots(selectedDate, bookedTimes, barber?.working_hours, selectedService?.duration_minutes ?? 30)
     : [];
 
   return {
@@ -114,6 +115,8 @@ export function useBooking(barberSlug: string) {
     notFound,
     selectedStaff,
     setSelectedStaff,
+    selectedService,
+    setSelectedService,
     selectedDate,
     setSelectedDate,
     selectedTime,

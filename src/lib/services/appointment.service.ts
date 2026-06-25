@@ -90,8 +90,10 @@ export const appointmentService = {
     if (error) throw error;
     
     return data.map((apt) => {
-      const timePart = apt.appointment_date.split("T")[1];
-      return timePart ? timePart.substring(0, 5) : "";
+      const d = new Date(apt.appointment_date);
+      const h = String(d.getHours()).padStart(2, '0');
+      const m = String(d.getMinutes()).padStart(2, '0');
+      return `${h}:${m}`;
     });
   },
 
