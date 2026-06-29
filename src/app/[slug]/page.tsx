@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -8,6 +8,7 @@ import { useBooking } from "@/hooks/useBooking";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthModal } from "@/components/auth/AuthModal";
 import { dateUtils } from "@/lib/utils/date-utils";
+import { reviewService, Review } from "@/lib/services/review.service";
 
 export default function BarberProfile({
   params,
@@ -27,6 +28,18 @@ export default function BarberProfile({
 
   const { user } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [reviews, setReviews] = useState<Review[]>([]);
+
+  useEffect(() => {
+    if (barber?.id) {
+      reviewService
+        .getByBarbershop(barber.id)
+        .then(setReviews)
+        .catch(console.error);
+    }
+  }, [barber?.id]);
+
+  const reviewStats = reviewService.calcStats(reviews);
 
   const handleReserveClick = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -120,6 +133,13 @@ export default function BarberProfile({
                   {barber.location}
                 </span>
               )}
+              {reviewStats.total > 0 && (
+                <span className="flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 font-bold text-primary">
+                  <StarFilledIcon className="h-4 w-4" />
+                  {reviewStats.average}
+                  <span className="font-normal text-muted-foreground">({reviewStats.total})</span>
+                </span>
+              )}
             </div>
           </div>
         </div>
@@ -181,7 +201,7 @@ export default function BarberProfile({
             </section>
 
             {/* Portfolio */}
-            <section>
+            <section className="mb-12">
               <div className="mb-8 flex items-center justify-between">
                 <h2 className="text-2xl font-black tracking-tight text-foreground">Portfolio</h2>
                 <div className="h-px flex-1 bg-border mx-6 hidden sm:block" />
@@ -211,6 +231,69 @@ export default function BarberProfile({
                         className="object-cover transition-transform duration-700 group-hover:scale-110"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-background/60 to-transparent opacity-0 transition-opacity group-hover:opacity-100" />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            {/* Reseñas */}
+            <section>
+              <div className="mb-6 flex items-center gap-4">
+                <h2 className="text-2xl font-black tracking-tight text-foreground">Reseñas</h2>
+                {reviewStats.total > 0 && (
+                  <div className="flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1">
+                    <StarFilledIcon className="h-4 w-4 text-primary" />
+                    <span className="font-black text-primary">{reviewStats.average}</span>
+                    <span className="text-xs text-muted-foreground">({reviewStats.total} reseñas)</span>
+                  </div>
+                )}
+                <div className="h-px flex-1 bg-border" />
+              </div>
+
+              {reviews.length === 0 ? (
+                <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-secondary/10 py-12 text-center text-muted-foreground">
+                  <StarOutlineIcon className="mb-3 h-10 w-10 opacity-30" />
+                  <p className="font-medium">Aún no hay reseñas para esta barbería.</p>
+                  <p className="mt-1 text-sm">¡Sé el primero en compartir tu experiencia!</p>
+                </div>
+              ) : (
+                <div className="flex flex-col gap-4">
+                  {reviews.map((review) => (
+                    <div
+                      key={review.id}
+                      className="relative overflow-hidden rounded-2xl border border-border bg-secondary/30 p-6 transition-all hover:bg-secondary"
+                    >
+                      <div className="pointer-events-none absolute -right-8 -top-8 h-20 w-20 rounded-full bg-primary/5 blur-2xl" />
+                      <div className="mb-3 flex items-start justify-between gap-4">
+                        <div className="flex items-center gap-1">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <StarFilledIcon
+                              key={star}
+                              className={`h-4 w-4 ${
+                                star <= review.rating ? "text-primary" : "text-border"
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span className="shrink-0 text-xs text-muted-foreground">
+                          {new Date(review.created_at).toLocaleDateString("es-ES", {
+                            day: "numeric",
+                            month: "short",
+                            year: "numeric",
+                          })}
+                        </span>
+                      </div>
+                      {review.comment && (
+                        <p className="mb-3 text-sm leading-relaxed text-foreground">
+                          &ldquo;{review.comment}&rdquo;
+                        </p>
+                      )}
+                      {review.staff?.name && (
+                        <p className="text-xs font-bold text-muted-foreground">
+                          Con <span className="text-primary">{review.staff.name}</span>
+                        </p>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -293,6 +376,22 @@ export default function BarberProfile({
         onSuccess={() => router.push(`/${barberSlug}/reserva`)}
       />
     </main>
+  );
+}
+
+function StarFilledIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className={className}>
+      <path fillRule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z" clipRule="evenodd" />
+    </svg>
+  );
+}
+
+function StarOutlineIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z" />
+    </svg>
   );
 }
 

@@ -1,4 +1,5 @@
 import { supabase } from "../supabase";
+import type { WorkingHours } from "./barber.service";
 
 export type AppointmentStatus = "pending" | "completed" | "cancelled";
 
@@ -14,6 +15,8 @@ export type Appointment = {
   created_at?: string;
   barbershops?: {
     full_name: string;
+    working_hours?: WorkingHours | null;
+    slug?: string;
   };
   staff?: {
     name: string;
@@ -23,7 +26,7 @@ export type Appointment = {
 export type CreateAppointmentData = {
   barber_id: string;
   staff_id: string;
-  client_id: string;
+  client_id?: string | null;
   customer_name: string;
   customer_phone: string;
   appointment_date: string;
@@ -35,7 +38,7 @@ export const appointmentService = {
   async getByBarbershop(barbershopId: string) {
     const { data, error } = await supabase
       .from("appointments")
-      .select("*, staff(name)")
+      .select("*, staff(name), barbershops(full_name, working_hours, slug)")
       .eq("barber_id", barbershopId)
       .order("appointment_date", { ascending: true });
 
@@ -47,7 +50,7 @@ export const appointmentService = {
   async getByStaff(staffId: string) {
     const { data, error } = await supabase
       .from("appointments")
-      .select("*")
+      .select("*, staff(name), barbershops(full_name, working_hours, slug)")
       .eq("staff_id", staffId)
       .order("appointment_date", { ascending: true });
 
@@ -61,7 +64,9 @@ export const appointmentService = {
       .select(`
         *,
         barbershops (
-          full_name
+          full_name,
+          working_hours,
+          slug
         ),
         staff (
           name
@@ -138,5 +143,32 @@ export const appointmentService = {
       .eq("id", id);
 
     if (error) throw error;
+  },
+
+  async reschedule(id: string, staffId: string, newDate: string) {
+    // Comprobación anti-colisión: verificar que el slot sigue libre antes de actualizar
+    const { data: existing, error: checkError } = await supabase
+      .from("appointments")
+      .select("id")
+      .eq("staff_id", staffId)
+      .eq("appointment_date", newDate)
+      .neq("status", "cancelled")
+      .neq("id", id)
+      .maybeSingle();
+
+    if (checkError) throw checkError;
+    if (existing) {
+      throw new Error("Este horario ya está reservado. Por favor, elige otro.");
+    }
+
+    const { data: appointment, error } = await supabase
+      .from("appointments")
+      .update({ appointment_date: newDate })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return appointment;
   }
 };

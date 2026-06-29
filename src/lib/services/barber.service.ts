@@ -6,13 +6,20 @@ export type BarberService = {
   duration_minutes: number; // Duración en minutos, ej: 30, 60, 90
 };
 
+export type VacationPeriod = {
+  start_date: string; // "2026-07-10"
+  end_date: string;   // "2026-07-20"
+};
+
 export type WorkingHours = {
   days: number[];        // 0=Dom, 1=Lun, 2=Mar, 3=Mié, 4=Jue, 5=Vie, 6=Sáb
   morning_start: string; // "10:00"
   morning_end: string;   // "14:00"
   afternoon_start: string; // "16:00"
   afternoon_end: string;   // "20:00"
+  vacations?: VacationPeriod[];
 };
+
 
 export type Barbershop = {
   id: string;
@@ -185,7 +192,10 @@ export const barberService = {
     }
 
     if (onlyVisible) {
-      query = query.eq("is_visible", true);
+      // Tratamos NULL como visible (fotos creadas antes de añadir la columna)
+      query = query.or("is_visible.eq.true,is_visible.is.null");
+    } else {
+      // En el dashboard mostramos todas (visibles y ocultas)
     }
 
     const { data, error } = await query.order("created_at", { ascending: false });
@@ -211,7 +221,8 @@ export const barberService = {
           barber_id: barberId,
           appointment_id: appointmentId,
           image_url: imageUrl,
-          staff_id: staffId
+          staff_id: staffId,
+          is_visible: true,
         },
       ]);
 

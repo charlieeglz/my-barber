@@ -51,7 +51,9 @@ export default function TeamManagement() {
     const file = e.target.files?.[0];
     if (file) {
       setAvatarFile(file);
-      setAvatarPreview(URL.createObjectURL(file));
+      const reader = new FileReader();
+      reader.onload = (ev) => setAvatarPreview(ev.target?.result as string);
+      reader.readAsDataURL(file);
     }
   };
 
@@ -97,7 +99,7 @@ export default function TeamManagement() {
       if (avatarFile) {
         try {
           const path = `${user.id}/staff/${storageService.generateFileName("staff-avatar", avatarFile)}`;
-          avatarUrl = await storageService.uploadImage(avatarFile, "portfolio", path);
+          avatarUrl = await storageService.uploadImage(avatarFile, "avatars", path);
         } catch (err) {
           const errMsg = err instanceof Error ? err.message : "desconocido";
           throw new Error(`Error al subir la foto de perfil: ${errMsg}`);
@@ -139,7 +141,7 @@ export default function TeamManagement() {
       if (avatarFile) {
         try {
           const path = `${user.id}/staff/${storageService.generateFileName("staff-avatar", avatarFile)}`;
-          avatarUrl = await storageService.uploadImage(avatarFile, "portfolio", path);
+          avatarUrl = await storageService.uploadImage(avatarFile, "avatars", path);
         } catch (err) {
           const errMsg = err instanceof Error ? err.message : "desconocido";
           throw new Error(`Error al subir la foto de perfil: ${errMsg}`);

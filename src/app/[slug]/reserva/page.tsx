@@ -76,20 +76,18 @@ export default function ReservaPage({
       return;
     }
 
-    if (!user) {
-      setIsPendingBooking(true);
-      setShowAuthModal(true);
-      return;
-    }
     executeBooking();
   };
 
   const executeBooking = async () => {
-    if (!user) return;
-    const success = await handleCreateBooking(user.id, name.trim(), phone.replace(/\s/g, ""));
+    const success = await handleCreateBooking(user?.id || null, name.trim(), phone.replace(/\s/g, ""));
     if (success) {
       setTimeout(() => {
-        router.push("/cliente");
+        if (user) {
+          router.push("/cliente");
+        } else {
+          router.push(`/${barberSlug}`);
+        }
       }, 1500);
     }
   };

@@ -30,12 +30,24 @@ export function Calendar({ selectedDate, onDateSelect, appointments }: CalendarP
 
   const hasAppointmentsOnDate = (day: number) => {
     const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    return appointments.some((apt) => apt.appointment_date.startsWith(dateStr));
+    return appointments.some((apt) => {
+      const d = new Date(apt.appointment_date);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const dy = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${dy}` === dateStr;
+    });
   };
 
   const countAppointmentsOnDate = (day: number) => {
     const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-    return appointments.filter((apt) => apt.appointment_date.startsWith(dateStr)).length;
+    return appointments.filter((apt) => {
+      const d = new Date(apt.appointment_date);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, "0");
+      const dy = String(d.getDate()).padStart(2, "0");
+      return `${y}-${m}-${dy}` === dateStr;
+    }).length;
   };
 
   const handleDayClick = (day: number) => {

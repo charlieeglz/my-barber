@@ -101,6 +101,7 @@ CREATE POLICY "Permitir creación de citas a clientes"
 ON appointments FOR INSERT 
 WITH CHECK (
   auth.uid() = client_id -- Asegura que la cita se cree a nombre del cliente autenticado
+  OR client_id IS NULL -- Permite reservas como invitado (sin login)
   OR EXISTS (
     -- Permite que el dueño o staff cree citas manualmente
     SELECT 1 FROM barbershops 

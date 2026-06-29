@@ -51,9 +51,7 @@ export const dateUtils = {
    * Formatea una fecha ISO a una cadena legible de fecha (ej: "lunes, 10 de junio").
    */
   formatFriendlyDate(isoDate: string) {
-    const [datePart] = isoDate.split("T");
-    const [year, month, day] = datePart.split("-").map(Number);
-    const date = new Date(year, month - 1, day);
+    const date = new Date(isoDate);
     return date.toLocaleDateString("es-ES", {
       weekday: "long",
       day: "numeric",
@@ -65,7 +63,7 @@ export const dateUtils = {
    * Formatea una fecha ISO a hora (ej: "10:30").
    */
   formatFriendlyTime(isoDate: string) {
-    const d = new Date(isoDate.replace('Z', ''));
+    const d = new Date(isoDate);
     const h = String(d.getHours()).padStart(2, '0');
     const m = String(d.getMinutes()).padStart(2, '0');
     return `${h}:${m}`;
@@ -85,9 +83,18 @@ export const dateUtils = {
     let slots: string[];
 
     if (workingHours) {
+      // Verificar si la fecha cae en un periodo de vacaciones
+      if (workingHours.vacations && Array.isArray(workingHours.vacations)) {
+        const isVacation = workingHours.vacations.some((v) => {
+          return date >= v.start_date && date <= v.end_date;
+        });
+        if (isVacation) return [];
+      }
+
       const [year, month, day] = date.split("-").map(Number);
       const dayOfWeek = new Date(year, month - 1, day).getDay();
       if (!workingHours.days.includes(dayOfWeek)) return [];
+
 
       slots = [
         ...generateTimeSlots(workingHours.morning_start, workingHours.morning_end),
@@ -140,7 +147,13 @@ export const dateUtils = {
    * Combina una fecha (YYYY-MM-DD) y una hora (HH:mm) en un string ISO.
    */
   combineDateAndTime(date: string, time: string) {
-    return `${date}T${time}:00`;
+    const offsetMinutes = new Date().getTimezoneOffset();
+    const offsetSign = offsetMinutes > 0 ? "-" : "+";
+    const absOffsetMinutes = Math.abs(offsetMinutes);
+    const offsetHours = String(Math.floor(absOffsetMinutes / 60)).padStart(2, "0");
+    const offsetMins = String(absOffsetMinutes % 60).padStart(2, "0");
+    const offsetString = `${offsetSign}${offsetHours}:${offsetMins}`;
+    return `${date}T${time}:00${offsetString}`;
   },
 
   /**

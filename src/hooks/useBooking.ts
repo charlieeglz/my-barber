@@ -66,11 +66,11 @@ export function useBooking(barberSlug: string) {
   }, [selectedDate, selectedStaff]);
 
   const handleCreateBooking = async (
-    userId: string,
+    userId: string | null | undefined,
     customerName: string,
     customerPhone: string
   ) => {
-    if (!barber || !selectedStaff || !userId || !selectedDate || !selectedTime) {
+    if (!barber || !selectedStaff || !selectedDate || !selectedTime) {
       setMessage("Faltan datos para la reserva.");
       return false;
     }
@@ -81,7 +81,7 @@ export function useBooking(barberSlug: string) {
     try {
       const appointmentDate = dateUtils.combineDateAndTime(selectedDate, selectedTime);
       
-      await appointmentService.create({
+      const createdAppointment = await appointmentService.create({
         barber_id: barber.id,
         staff_id: selectedStaff.id,
         client_id: userId,
@@ -90,6 +90,17 @@ export function useBooking(barberSlug: string) {
         appointment_date: appointmentDate,
         status: "pending",
       });
+
+      // Enviar correo de notificación de nueva reserva
+      if (createdAppointment?.id) {
+        fetch("/api/notify", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ type: "booking", appointmentId: createdAppointment.id }),
+        }).catch(err => console.error("Error al enviar notificación de nueva reserva:", err));
+      }
 
       setMessage("¡Reserva creada correctamente!");
       setBookedTimes((prev) => [...prev, selectedTime]);

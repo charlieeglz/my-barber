@@ -10,6 +10,7 @@ function LoginContent() {
   const searchParams = useSearchParams();
   const nextParam = searchParams.get("next");
   const isConfirmed = searchParams.get("confirmed");
+  const isInactive = searchParams.get("inactive") === "true";
   const router = useRouter();
   const { user, profile, loading: authLoading } = useAuth();
 
@@ -19,8 +20,8 @@ function LoginContent() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [error, setError] = useState(isInactive ? "Tu sesión ha expirado por inactividad. Por favor, inicia sesión de nuevo." : "");
+  const [success, setSuccess] = useState(isConfirmed ? "¡Email confirmado con éxito! Ahora puedes iniciar sesión." : "");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
 
@@ -30,11 +31,7 @@ function LoginContent() {
   const [resetLoading, setResetLoading] = useState(false);
   const [resetSent, setResetSent] = useState(false);
 
-  useEffect(() => {
-    if (isConfirmed) {
-      setSuccess("¡Email confirmado con éxito! Ahora puedes iniciar sesión.");
-    }
-  }, [isConfirmed]);
+
 
   useEffect(() => {
     if (!authLoading && user && profile && !isConfirmed) {

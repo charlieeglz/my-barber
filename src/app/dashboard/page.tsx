@@ -10,6 +10,7 @@ import { storageService } from "@/lib/services/storage.service";
 import { dateUtils } from "@/lib/utils/date-utils";
 import { Calendar } from "@/components/dashboard/Calendar";
 import { AppointmentCard } from "@/components/dashboard/AppointmentCard";
+import { RescheduleModal } from "@/components/RescheduleModal";
 
 export default function Dashboard() {
   const { user, profile, loading: authLoading, signOut } = useAuth("barber");
@@ -22,6 +23,31 @@ export default function Dashboard() {
   const [selectedDate, setSelectedDate] = useState(dateUtils.getTodayString());
   const [selectedStaffFilter, setSelectedStaffFilter] = useState<string>("all");
   const [uploadingId, setUploadingId] = useState<string | null>(null);
+  const [cancelingId, setCancelingId] = useState<string | null>(null);
+  const [rescheduleModal, setRescheduleModal] = useState<{
+    open: boolean;
+    appointment: Appointment | null;
+  }>({ open: false, appointment: null });
+  const [origin, setOrigin] = useState("");
+
+  useEffect(() => {
+    setOrigin(window.location.origin);
+  }, []);
+
+  // Estados para Cita Manual
+  const [isManualModalOpen, setIsManualModalOpen] = useState(false);
+  const [manualCustomerName, setManualCustomerName] = useState("");
+  const [manualCustomerPhone, setManualCustomerPhone] = useState("");
+  const [manualStaffId, setManualStaffId] = useState("");
+  const [manualTime, setManualTime] = useState("");
+  const [manualDate, setManualDate] = useState(dateUtils.getTodayString());
+  const [manualBookedTimes, setManualBookedTimes] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (isManualModalOpen && manualDate && manualStaffId) {
+      appointmentService.getBookedTimes(manualStaffId, manualDate).then(setManualBookedTimes).catch(console.error);
+    }
+  }, [manualDate, manualStaffId, isManualModalOpen]);
 
   useEffect(() => {
     async function fetchDashboardData() {
@@ -51,6 +77,9 @@ export default function Dashboard() {
         ]);
 
         setStaff(staffData);
+        if (staffData.length > 0) {
+          setManualStaffId(staffData[0].id);
+        }
         setAppointments(appointmentsData);
         
         if (profile.staffInfo?.role === 'barber') {
@@ -92,8 +121,90 @@ export default function Dashboard() {
     }
   };
 
+  const handleCancel = async (apt: Appointment) => {
+    setCancelingId(apt.id);
+    try {
+      const res = await fetch("/api/appointments/cancel", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ appointmentId: apt.id }),
+      });
+
+      const resData = await res.json();
+      if (!res.ok || resData.error) {
+        throw new Error(resData.error || "No se pudo cancelar");
+      }
+
+      setAppointments((prev) =>
+        prev.map((a) => (a.id === apt.id ? { ...a, status: "cancelled" } : a))
+      );
+    } catch (error) {
+      console.error(error);
+      alert("Error al cancelar la cita");
+    } finally {
+      setCancelingId(null);
+    }
+  };
+
+  const handleRescheduleSuccess = (appointmentId: string, newDate: string) => {
+    setAppointments((prev) =>
+      prev.map((apt) =>
+        apt.id === appointmentId ? { ...apt, appointment_date: newDate } : apt
+      )
+    );
+  };
+
+  const handleCreateManualAppointment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!barber || !manualCustomerName.trim() || !manualCustomerPhone.trim() || !manualStaffId || !manualDate || !manualTime) {
+      alert("Por favor rellena todos los campos.");
+      return;
+    }
+
+    try {
+      const combinedDate = dateUtils.combineDateAndTime(manualDate, manualTime);
+      const newApt = await appointmentService.create({
+        barber_id: barber.id,
+        staff_id: manualStaffId,
+        client_id: null,
+        customer_name: manualCustomerName.trim(),
+        customer_phone: manualCustomerPhone.replace(/\s/g, ""),
+        appointment_date: combinedDate,
+        status: "pending"
+      });
+
+      const staffMember = staff.find(s => s.id === manualStaffId);
+      const newAptWithStaff = {
+        ...newApt,
+        staff: {
+          name: staffMember ? staffMember.name : ""
+        }
+      };
+
+      setAppointments((prev) => [...prev, newAptWithStaff as Appointment]);
+
+      // Reset form and close modal
+      setManualCustomerName("");
+      setManualCustomerPhone("");
+      setManualTime("");
+      setIsManualModalOpen(false);
+      alert("Cita manual creada con éxito.");
+    } catch (err: any) {
+      console.error(err);
+      alert("Error al crear la cita: " + err.message);
+    }
+  };
+
   const filteredAppointments = appointments.filter((apt) => {
-    const matchesDate = apt.appointment_date.split("T")[0] === selectedDate;
+    const d = new Date(apt.appointment_date);
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    const localDateString = `${year}-${month}-${day}`;
+
+    const matchesDate = localDateString === selectedDate;
     const matchesStaff = selectedStaffFilter === "all" || apt.staff_id === selectedStaffFilter;
     return matchesDate && matchesStaff;
   });
@@ -124,6 +235,16 @@ export default function Dashboard() {
           {/* Botones — scroll horizontal en móvil */}
           <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
             <div className="flex w-max gap-2 sm:w-auto sm:flex-wrap">
+              <button
+                onClick={() => {
+                  setManualDate(selectedDate);
+                  setIsManualModalOpen(true);
+                }}
+                className="flex shrink-0 items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground shadow-lg shadow-primary/10 transition-all hover:scale-[1.02] active:scale-[0.98] sm:px-5 sm:text-sm"
+              >
+                <PlusIcon className="h-4 w-4" />
+                Nueva Cita
+              </button>
               {isOwner && (
                 <Link
                   href={`/${barber?.slug}`}
@@ -134,6 +255,15 @@ export default function Dashboard() {
                   Ver como Cliente
                 </Link>
               )}
+              <Link
+                href="/cliente"
+                className="flex shrink-0 items-center gap-2 rounded-xl border border-border bg-secondary/50 px-4 py-2.5 text-xs font-bold text-foreground transition-all hover:border-primary/50 hover:bg-secondary sm:px-5 sm:text-sm"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="h-4 w-4 text-primary">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5m-9-6h.008v.008H12v-.008ZM12 15h.008v.008H12V15Zm0 2.25h.008v.008H12v-.008ZM9.75 15h.008v.008H9.75V15Zm0 2.25h.008v.008H9.75v-.008ZM7.5 15h.008v.008H7.5V15Zm0 2.25h.008v.008H7.5v-.008Zm6.75-4.5h.008v.008h-.008v-.008Zm0 2.25h.008v.008h-.008V15Zm0 2.25h.008v.008h-.008v-.008Zm2.25-4.5h.008v.008H16.5v-.008Zm0 2.25h.008v.008H16.5V15Z" />
+                </svg>
+                Mis Citas (Cliente)
+              </Link>
               <Link
                 href="/dashboard/perfil"
                 className="flex shrink-0 items-center gap-2 rounded-xl border border-border bg-secondary/50 px-4 py-2.5 text-xs font-bold text-foreground transition-all hover:border-primary/50 hover:bg-secondary sm:px-5 sm:text-sm"
@@ -172,7 +302,7 @@ export default function Dashboard() {
           </div>
 
           {/* Sidebar — fila horizontal en móvil, columna en desktop */}
-          <div className="grid grid-cols-2 gap-4 lg:col-span-4 lg:grid-cols-1 lg:gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:col-span-4 lg:grid-cols-1 lg:gap-6">
             {/* Filtro de profesional */}
             <div className="rounded-3xl border border-border bg-secondary/30 p-5 shadow-xl backdrop-blur-sm sm:p-6">
               <h3 className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground sm:mb-4">
@@ -202,6 +332,34 @@ export default function Dashboard() {
                 <div className="h-1 w-6 rounded-full bg-primary/20" />
               </div>
             </div>
+
+            {/* Código QR Escaparate (Costo 0€) */}
+            {isOwner && barber && origin && (
+              <div className="relative overflow-hidden rounded-3xl border border-border bg-secondary/30 p-5 text-center shadow-xl backdrop-blur-sm sm:p-6 flex flex-col justify-between items-center">
+                <div className="absolute -right-4 -top-4 h-10 w-10 rounded-full bg-primary/10 blur-xl" />
+                <h3 className="mb-3 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground w-full">
+                  QR Escaparate
+                </h3>
+                <div className="mx-auto my-2 flex h-28 w-28 items-center justify-center rounded-2xl bg-white p-2">
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(origin + '/' + barber.slug)}`}
+                    alt="Código QR de la Barbería"
+                    className="h-full w-full object-contain"
+                  />
+                </div>
+                <p className="text-[10px] text-muted-foreground mt-1 leading-snug">
+                  Escanea para reservar online al instante.
+                </p>
+                <a
+                  href={`https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=${encodeURIComponent(origin + '/' + barber.slug)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-xl border border-border bg-background px-4 py-2 text-xs font-bold text-foreground transition-all hover:bg-secondary"
+                >
+                  Ver QR Grande
+                </a>
+              </div>
+            )}
           </div>
         </div>
 
@@ -221,6 +379,9 @@ export default function Dashboard() {
                 appointment={apt}
                 onPhotoUpload={handlePhotoUpload}
                 isUploading={uploadingId === apt.id}
+                onCancel={handleCancel}
+                isCanceling={cancelingId === apt.id}
+                onReschedule={(appointment) => setRescheduleModal({ open: true, appointment })}
               />
             ))}
             {filteredAppointments.length === 0 && (
@@ -236,6 +397,103 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Modal Cita Manual */}
+      {isManualModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl border border-border bg-card p-6 shadow-2xl">
+            <h2 className="text-xl font-black text-foreground mb-4">Añadir Cita Manual</h2>
+            <form onSubmit={handleCreateManualAppointment} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Nombre del Cliente</label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ej. Juan Pérez"
+                  value={manualCustomerName}
+                  onChange={(e) => setManualCustomerName(e.target.value)}
+                  className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Teléfono</label>
+                <input
+                  type="tel"
+                  required
+                  placeholder="Ej. 600000000"
+                  value={manualCustomerPhone}
+                  onChange={(e) => setManualCustomerPhone(e.target.value)}
+                  className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Barbero Asignado</label>
+                <select
+                  value={manualStaffId}
+                  onChange={(e) => setManualStaffId(e.target.value)}
+                  className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                >
+                  {staff.map((member) => (
+                    <option key={member.id} value={member.id}>{member.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Fecha</label>
+                  <input
+                    type="date"
+                    required
+                    value={manualDate}
+                    onChange={(e) => setManualDate(e.target.value)}
+                    className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary [color-scheme:dark]"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Hora</label>
+                  <select
+                    value={manualTime}
+                    required
+                    onChange={(e) => setManualTime(e.target.value)}
+                    className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  >
+                    <option value="">Selecciona hora</option>
+                    {dateUtils.getAvailableSlots(manualDate, manualBookedTimes, barber?.working_hours, 30).map((slot) => (
+                      <option key={slot} value={slot}>{slot}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div className="flex gap-3 pt-4 border-t border-border/50">
+                <button
+                  type="button"
+                  onClick={() => setIsManualModalOpen(false)}
+                  className="flex-1 rounded-xl border border-border bg-secondary/50 py-3 text-xs font-bold text-foreground transition-all hover:bg-secondary"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 rounded-xl bg-primary py-3 text-xs font-bold text-primary-foreground transition-all hover:opacity-90"
+                >
+                  Guardar Cita
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de reprogramación */}
+      {rescheduleModal.appointment && (
+        <RescheduleModal
+          isOpen={rescheduleModal.open}
+          onClose={() => setRescheduleModal({ open: false, appointment: null })}
+          onSuccess={handleRescheduleSuccess}
+          appointment={rescheduleModal.appointment}
+        />
+      )}
     </main>
   );
 }
@@ -261,6 +519,14 @@ function ProfileIcon({ className }: { className?: string }) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className={className}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z" />
+    </svg>
+  );
+}
+
+function PlusIcon({ className }: { className?: string }) {
+  return (
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className={className}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
     </svg>
   );
 }
