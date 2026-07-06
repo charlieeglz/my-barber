@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { dateUtils } from "@/lib/utils/date-utils";
 import { Appointment } from "@/lib/services/appointment.service";
+import { ChevronLeftIcon, ChevronRightIcon } from "@/components/Icons";
 
 interface CalendarProps {
   selectedDate: string;
@@ -143,18 +144,3 @@ export function Calendar({ selectedDate, onDateSelect, appointments }: CalendarP
   );
 }
 
-function ChevronLeftIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className={className}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
-    </svg>
-  );
-}
-
-function ChevronRightIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={3} stroke="currentColor" className={className}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
-    </svg>
-  );
-}

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Appointment, appointmentService } from "@/lib/services/appointment.service";
 import { dateUtils } from "@/lib/utils/date-utils";
+import { CancelIcon } from "@/components/Icons";
 
 interface RescheduleModalProps {
   isOpen: boolean;
@@ -89,9 +90,7 @@ export function RescheduleModal({ isOpen, onClose, onSuccess, appointment }: Res
             onClick={onClose}
             className="rounded-lg p-1.5 text-muted-foreground hover:bg-secondary hover:text-foreground transition-all cursor-pointer"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2.5} stroke="currentColor" className="h-5 w-5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-            </svg>
+            <CancelIcon className="h-5 w-5" />
           </button>
         </div>
 

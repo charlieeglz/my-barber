@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
+import { SearchIcon, ScissorsIcon } from "@/components/Icons";
 
 export default function WelcomePage() {
   const { user, profile, signOut, loading } = useAuth();
@@ -33,7 +34,6 @@ export default function WelcomePage() {
       </nav>
 
       <div className="relative w-full max-w-5xl text-center">
-...
         <div className="absolute -top-24 left-1/2 -z-10 h-64 w-64 -translate-x-1/2 rounded-full bg-primary/10 blur-[100px]" />
         
         <h1 className="mb-4 text-5xl font-extrabold tracking-tight text-foreground md:text-7xl">
@@ -92,22 +92,5 @@ export default function WelcomePage() {
         </footer>
       </div>
     </main>
-  );
-}
-
-// Simple SVG Icons for a cleaner look
-function SearchIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className={className}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-    </svg>
-  );
-}
-
-function ScissorsIcon({ className }: { className?: string }) {
-  return (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className={className}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M7.848 8.192a4 4 0 1 0 5.304 5.304M7.848 8.192a4 4 0 1 1 5.304 5.304M7.848 8.192 10.5 10.5m2.652 2.652L18 18M10.5 10.5l-2.652 2.652M10.5 10.5l2.652-2.652M13.152 13.152 21 21" />
-    </svg>
   );
 }

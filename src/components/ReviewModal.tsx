@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { reviewService, CreateReviewData } from "@/lib/services/review.service";
+import { StarIcon, CancelIcon } from "@/components/Icons";
 
 type Props = {
   isOpen: boolean;
@@ -109,20 +110,7 @@ export function ReviewModal({
               className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-all hover:text-foreground"
               aria-label="Cerrar"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={2}
-                stroke="currentColor"
-                className="h-4 w-4"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M6 18 18 6M6 6l12 12"
-                />
-              </svg>
+              <CancelIcon className="h-4 w-4" />
             </button>
           </div>
 
@@ -217,27 +205,3 @@ export function ReviewModal({
   );
 }
 
-function StarIcon({
-  className,
-  filled,
-}: {
-  className?: string;
-  filled: boolean;
-}) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 24 24"
-      strokeWidth={1.5}
-      stroke={filled ? "transparent" : "currentColor"}
-      fill={filled ? "currentColor" : "none"}
-      className={`${className} ${filled ? "text-primary" : "text-border"}`}
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        d="M11.48 3.499a.562.562 0 0 1 1.04 0l2.125 5.111a.563.563 0 0 0 .475.345l5.518.442c.499.04.701.663.321.988l-4.204 3.602a.563.563 0 0 0-.182.557l1.285 5.385a.562.562 0 0 1-.84.61l-4.725-2.885a.562.562 0 0 0-.586 0L6.982 20.54a.562.562 0 0 1-.84-.61l1.285-5.386a.562.562 0 0 0-.182-.557l-4.204-3.602a.562.562 0 0 1 .321-.988l5.518-.442a.563.563 0 0 0 .475-.345L11.48 3.5Z"
-      />
-    </svg>
-  );
-}
