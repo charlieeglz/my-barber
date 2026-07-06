@@ -132,11 +132,31 @@ export const dateUtils = {
 
       for (let i = 0; i < slotsNeeded; i++) {
         const checkMin = startMin + i * 30;
-        // El slot requerido no existe en el horario (p.ej. cae en descanso o tras el cierre)
-        if (!slotMinutesSet.has(checkMin)) return false;
-        // El slot requerido está ocupado
         const checkTime = `${String(Math.floor(checkMin / 60)).padStart(2, "0")}:${String(checkMin % 60).padStart(2, "0")}`;
+
+        // El slot requerido está ocupado
         if (bookedTimes.includes(checkTime)) return false;
+
+        // Solo el slot de inicio (i === 0) debe estar estrictamente dentro del horario laboral.
+        // Los slots de continuación (i > 0) pueden terminar después de la hora de cierre.
+        if (i === 0) {
+          if (!slotMinutesSet.has(checkMin)) return false;
+        } else {
+          // Si el barbero tiene descansos, evitamos que un turno de la mañana invada la tarde cruzando el descanso
+          if (workingHours) {
+            const parseMin = (t?: string | null) => {
+              if (!t) return 0;
+              const [h, m] = t.split(":").map(Number);
+              return h * 60 + m;
+            };
+            const morningEndMin = parseMin(workingHours.morning_end);
+            const afternoonStartMin = parseMin(workingHours.afternoon_start);
+            // Si empezó en el turno de mañana, no puede invadir el descanso
+            if (startMin < morningEndMin && checkMin >= morningEndMin && checkMin < afternoonStartMin) {
+              return false;
+            }
+          }
+        }
       }
 
       return true;
