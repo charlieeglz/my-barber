@@ -116,6 +116,9 @@ export const dateUtils = {
     );
 
     return slots.filter((time, index) => {
+      // Limitar a las 19:30 máximo debido a restricciones de la base de datos
+      if (time > "19:30") return false;
+
       // Filtrar horas pasadas si es hoy
       if (isToday) {
         const [hour, minute] = time.split(":").map(Number);
