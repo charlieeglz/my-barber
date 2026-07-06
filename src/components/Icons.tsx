@@ -600,17 +600,13 @@ export function MailIcon({ size, className, ...props }: IconProps) {
   );
 }
 
-// 26. WhatsApp Brand Icon (Cleaned & Standardized SVG - Outline Version)
+// 26. WhatsApp Brand Icon (Cleaned & Standardized SVG)
 export function WhatsAppIcon({ size, className, ...props }: IconProps) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={props.strokeWidth || 1.2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      fill="currentColor"
       width={size}
       height={size}
       className={className}
