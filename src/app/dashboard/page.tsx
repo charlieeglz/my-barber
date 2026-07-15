@@ -279,15 +279,7 @@ export default function Dashboard() {
                 <ProfileIcon className="h-4 w-4 text-primary" />
                 Editar Perfil
               </Link>
-              {isOwner && (
-                <Link
-                  href="/dashboard/equipo"
-                  className="flex shrink-0 items-center gap-2 rounded-xl border border-border bg-secondary/50 px-4 py-2.5 text-xs font-bold text-foreground transition-all hover:border-primary/50 hover:bg-secondary sm:px-5 sm:text-sm"
-                >
-                  <TeamIcon className="h-4 w-4 text-primary" />
-                  Mi Equipo
-                </Link>
-              )}
+
               <button
                 onClick={signOut}
                 className="shrink-0 rounded-xl border border-border bg-secondary/50 px-4 py-2.5 text-xs font-bold text-muted-foreground transition-all hover:border-foreground hover:text-foreground sm:px-5 sm:text-sm"

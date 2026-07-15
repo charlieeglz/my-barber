@@ -249,28 +249,15 @@ export default function OnboardingPage() {
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Especialistas</label>
+                <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Dirección / Ubicación</label>
                 <input
-                  type="number"
-                  min="1"
-                  max="20"
-                  required
-                  value={numBarbers}
-                  onChange={(e) => setNumBarbers(e.target.value)}
-                  className="block w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all"
+                  type="text"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="Ej: Calle Gran Vía 15, Madrid"
+                  className="block w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/30"
                 />
               </div>
-            </div>
-
-            <div className="space-y-1.5">
-              <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Dirección / Ubicación</label>
-              <input
-                type="text"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="Ej: Calle Gran Vía 15, Madrid"
-                className="block w-full rounded-xl border border-border bg-background px-4 py-3 text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/30"
-              />
             </div>
 
             {/* URL — flex container para alineación perfecta */}
