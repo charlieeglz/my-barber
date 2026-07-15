@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
+import { createClient } from "@supabase/supabase-js";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -38,13 +39,20 @@ export async function GET(request: Request) {
       const existingRole = user?.user_metadata?.role;
       const resolvedRole = existingRole || roleParam || "client";
 
-      if (!existingRole && roleParam) {
-        await supabase.auth.updateUser({
-          data: {
+      if (!existingRole && roleParam && user) {
+        const supabaseAdmin = createClient(
+          process.env.NEXT_PUBLIC_SUPABASE_URL!,
+          process.env.SUPABASE_SERVICE_ROLE_KEY!
+        );
+        const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(user.id, {
+          user_metadata: {
+            ...user.user_metadata,
             role: roleParam,
-            full_name: user?.user_metadata?.full_name || user?.user_metadata?.name || "",
-          },
+          }
         });
+        if (updateError) {
+          console.error("Error updating user metadata via admin client:", updateError);
+        }
       }
 
       const destination = resolvedRole === "barber" ? "/dashboard" : next;

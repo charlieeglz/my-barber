@@ -30,7 +30,7 @@ export const authService = {
           role: role,
           phone: phone
         },
-        emailRedirectTo: `${window.location.origin}/login?confirmed=true`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?role=${role}`,
       },
     });
 
