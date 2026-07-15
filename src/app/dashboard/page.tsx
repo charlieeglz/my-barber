@@ -58,7 +58,10 @@ export default function Dashboard() {
 
   useEffect(() => {
     async function fetchDashboardData() {
-      if (!user || !profile) return;
+      if (!user || !profile) {
+        setLoading(false);
+        return;
+      }
       
       try {
         let barbershopId: string;

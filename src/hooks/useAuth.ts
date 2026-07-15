@@ -24,6 +24,11 @@ export function useAuth(requiredRole?: UserRole) {
           const redirectPath = data.role === "barber" ? "/dashboard" : "/cliente";
           router.push(redirectPath);
         }
+      } else {
+        if (requiredRole) {
+          console.log(`[useAuth] No profile found but role is required. Redirecting to login.`);
+          router.push("/login");
+        }
       }
     } catch (error) {
       console.error("Error loading profile:", error);
