@@ -6,11 +6,12 @@ import { createClient } from "@supabase/supabase-js";
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
-  const roleParam = searchParams.get("role") as "barber" | "client" | null;
+  const cookieStore = await cookies();
+  const pendingRole = cookieStore.get("sb-pending-role")?.value as "barber" | "client" | null;
+  const roleParam = (searchParams.get("role") || pendingRole) as "barber" | "client" | null;
   const next = searchParams.get("next") ?? "/cliente";
 
   if (code) {
-    const cookieStore = await cookies();
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -67,6 +68,9 @@ export async function GET(request: Request) {
           }
         }
       }
+
+      // Limpiar la cookie de rol temporal
+      cookieStore.delete("sb-pending-role");
 
       const destination = resolvedRole === "barber" ? "/dashboard" : next;
       return NextResponse.redirect(`${origin}${destination}`);

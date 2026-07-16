@@ -101,6 +101,11 @@ export const authService = {
   },
 
   async signInWithGoogle(role: "barber" | "client" = "client") {
+    // Guardar el rol en una cookie temporal para recuperarlo en el callback de forma robusta
+    if (typeof window !== "undefined") {
+      document.cookie = `sb-pending-role=${role}; path=/; max-age=600; SameSite=Lax; Secure`;
+    }
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
