@@ -52,7 +52,7 @@ export const authService = {
     // 1. Get user and metadata from Auth (Safe & Robust)
     let user = authUser;
     
-    if (!user) {
+    if (!user || !user.user_metadata?.role) {
       const { data, error: authError } = await supabase.auth.getUser();
       if (authError || !data?.user) {
         console.error("Auth user not found:", authError);
