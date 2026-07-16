@@ -40,18 +40,31 @@ export async function GET(request: Request) {
       const resolvedRole = existingRole || roleParam || "client";
 
       if (!existingRole && roleParam && user) {
-        const supabaseAdmin = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!
-        );
-        const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(user.id, {
-          user_metadata: {
-            ...user.user_metadata,
-            role: roleParam,
+        const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+        if (serviceKey) {
+          const supabaseAdmin = createClient(
+            process.env.NEXT_PUBLIC_SUPABASE_URL!,
+            serviceKey
+          );
+          const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(user.id, {
+            user_metadata: {
+              ...user.user_metadata,
+              role: roleParam,
+            }
+          });
+          if (updateError) {
+            console.error("Error updating user metadata via admin client:", updateError);
           }
-        });
-        if (updateError) {
-          console.error("Error updating user metadata via admin client:", updateError);
+        } else {
+          console.warn("SUPABASE_SERVICE_ROLE_KEY is missing. Falling back to authenticated client.auth.updateUser");
+          const { error: updateError } = await supabase.auth.updateUser({
+            data: {
+              role: roleParam,
+            },
+          });
+          if (updateError) {
+            console.error("Error updating user metadata via authenticated client:", updateError);
+          }
         }
       }
 
