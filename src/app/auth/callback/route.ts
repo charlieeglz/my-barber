@@ -55,6 +55,7 @@ export async function GET(request: Request) {
           });
           if (updateError) {
             console.error("Error updating user metadata via admin client:", updateError);
+            return NextResponse.redirect(`${origin}/login?error=admin_update_error_${encodeURIComponent(updateError.message)}`);
           }
         } else {
           console.warn("SUPABASE_SERVICE_ROLE_KEY is missing. Falling back to authenticated client.auth.updateUser");
@@ -65,6 +66,7 @@ export async function GET(request: Request) {
           });
           if (updateError) {
             console.error("Error updating user metadata via authenticated client:", updateError);
+            return NextResponse.redirect(`${origin}/login?error=user_update_error_${encodeURIComponent(updateError.message)}`);
           }
         }
       }

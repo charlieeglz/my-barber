@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
-import { SearchIcon, ScissorsIcon } from "@/components/Icons";
+import { SearchIcon, ScissorsIcon, CalendarIcon } from "@/components/Icons";
 
 export default function WelcomePage() {
   const { user, profile, signOut, loading } = useAuth();
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-background px-6 py-12">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-background px-6 pb-12 pt-28 md:pt-20">
       {/* Top Navigation */}
       <nav className="absolute right-6 top-6 flex items-center gap-4">
         {!loading && user ? (
@@ -33,7 +33,7 @@ export default function WelcomePage() {
         )}
       </nav>
 
-      <div className="relative w-full max-w-5xl text-center">
+      <div className="relative w-full max-w-5xl text-center mt-12 md:mt-4">
         <div className="absolute -top-24 left-1/2 -z-10 h-64 w-64 -translate-x-1/2 rounded-full bg-primary/10 blur-[100px]" />
         
         <h1 className="mb-4 text-5xl font-extrabold tracking-tight text-foreground md:text-7xl">
@@ -63,22 +63,40 @@ export default function WelcomePage() {
             </div>
           </Link>
 
-          {/* Opción 2: Barbero */}
-          <Link
-            href={user && profile?.role === "barber" ? "/dashboard" : "/login"}
-            className="group relative flex flex-col items-start rounded-2xl border border-border bg-secondary/50 p-8 text-left transition-all hover:border-primary/50 hover:bg-secondary"
-          >
-            <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-              <ScissorsIcon className="h-6 w-6" />
-            </div>
-            <h2 className="mb-2 text-2xl font-bold text-foreground">Portal para Profesionales</h2>
-            <p className="mb-6 text-muted-foreground">
-              Digitaliza tu barbería. Gestiona tu agenda, clientes y pagos en una sola plataforma.
-            </p>
-            <div className="mt-auto flex items-center font-semibold text-primary group-hover:gap-2 transition-all">
-              Acceder al panel <span>→</span>
-            </div>
-          </Link>
+          {/* Opción 2: Barbero o Cliente (Mis Citas) */}
+          {user && profile?.role === "client" ? (
+            <Link
+              href="/cliente"
+              className="group relative flex flex-col items-start rounded-2xl border border-border bg-secondary/50 p-8 text-left transition-all hover:border-primary/50 hover:bg-secondary"
+            >
+              <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                <CalendarIcon className="h-6 w-6" />
+              </div>
+              <h2 className="mb-2 text-2xl font-bold text-foreground">Mis Citas</h2>
+              <p className="mb-6 text-muted-foreground">
+                Revisa el estado de tus reservas, reprograma tus citas o valora a tus barberos favoritos.
+              </p>
+              <div className="mt-auto flex items-center font-semibold text-primary group-hover:gap-2 transition-all">
+                Ver mis citas <span>→</span>
+              </div>
+            </Link>
+          ) : (
+            <Link
+              href={user && profile?.role === "barber" ? "/dashboard" : "/login"}
+              className="group relative flex flex-col items-start rounded-2xl border border-border bg-secondary/50 p-8 text-left transition-all hover:border-primary/50 hover:bg-secondary"
+            >
+              <div className="mb-6 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                <ScissorsIcon className="h-6 w-6" />
+              </div>
+              <h2 className="mb-2 text-2xl font-bold text-foreground">Portal para Profesionales</h2>
+              <p className="mb-6 text-muted-foreground">
+                Digitaliza tu barbería. Gestiona tu agenda, clientes y pagos en una sola plataforma.
+              </p>
+              <div className="mt-auto flex items-center font-semibold text-primary group-hover:gap-2 transition-all">
+                Acceder al panel <span>→</span>
+              </div>
+            </Link>
+          )}
         </div>
 
         {/* Minimalist Footer */}
