@@ -744,14 +744,14 @@ export default function EditProfilePage() {
                 {/* Formulario para añadir periodo de vacaciones */}
                 <div className="rounded-2xl border border-border bg-background/40 p-4 space-y-4">
                   <p className="text-xs font-black uppercase tracking-widest text-muted-foreground text-left">Añadir Periodo de Vacaciones</p>
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 max-w-lg">
                     <div className="space-y-1.5 text-left">
                       <label className="text-xs font-bold text-muted-foreground">Fecha de inicio</label>
                       <input
                         type="date"
                         value={newVacationStart}
                         onChange={(e) => setNewVacationStart(e.target.value)}
-                        className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm font-bold text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary [color-scheme:dark]"
+                        className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm font-bold text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary [color-scheme:dark]"
                       />
                     </div>
                     <div className="space-y-1.5 text-left">
@@ -760,14 +760,14 @@ export default function EditProfilePage() {
                         type="date"
                         value={newVacationEnd}
                         onChange={(e) => setNewVacationEnd(e.target.value)}
-                        className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm font-bold text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary [color-scheme:dark]"
+                        className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm font-bold text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary [color-scheme:dark]"
                       />
                     </div>
                   </div>
                   <button
                     type="button"
                     onClick={handleAddVacation}
-                    className="w-full rounded-xl bg-primary/10 hover:bg-primary/20 py-2.5 text-xs font-bold text-primary transition-all cursor-pointer"
+                    className="w-full max-w-lg rounded-xl bg-primary/10 hover:bg-primary/20 py-2.5 text-xs font-bold text-primary transition-all cursor-pointer block"
                   >
                     + Añadir Periodo
                   </button>

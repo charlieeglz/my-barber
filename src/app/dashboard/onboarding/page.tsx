@@ -31,6 +31,7 @@ const TIME_OPTIONS: string[] = Array.from({ length: 31 }, (_, i) => {
 export default function OnboardingPage() {
   const { user, profile, loading: authLoading } = useAuth("barber");
   const router = useRouter();
+  const [checkingProfile, setCheckingProfile] = useState(true);
 
   // — Sección 1: Info General —
   const [fullName, setFullName] = useState("");
@@ -67,11 +68,26 @@ export default function OnboardingPage() {
   useEffect(() => {
     async function checkProfile() {
       if (user) {
-        const existing = await barberService.getByUserId(user.id);
-        if (existing) router.push("/dashboard");
+        try {
+          const existing = await barberService.getByUserId(user.id);
+          if (existing) {
+            router.push("/dashboard");
+            return;
+          }
+        } catch (err) {
+          console.error("Error checking existing profile:", err);
+        } finally {
+          setCheckingProfile(false);
+        }
       }
     }
-    if (!authLoading && user) checkProfile();
+    if (!authLoading) {
+      if (user) {
+        checkProfile();
+      } else {
+        setCheckingProfile(false);
+      }
+    }
   }, [user, authLoading, router]);
 
   // Sincronizar extraStaff con numBarbers
@@ -205,7 +221,7 @@ export default function OnboardingPage() {
     }
   }
 
-  if (authLoading) {
+  if (authLoading || checkingProfile) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-muted border-t-primary" />
@@ -216,7 +232,7 @@ export default function OnboardingPage() {
   const numBarbersInt = parseInt(numBarbers) || 1;
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background p-6 md:p-12">
+    <main className="flex min-h-screen items-center justify-center bg-background p-6 md:p-12 animate-in fade-in duration-500">
       <div className="w-full max-w-2xl">
         <div className="mb-12 text-center">
           <Link href="/" className="mb-8 inline-block text-3xl font-black tracking-tighter text-foreground">
@@ -413,33 +429,33 @@ export default function OnboardingPage() {
 
             <div className="space-y-3">
               {services.map((service, index) => (
-                <div key={index} className="flex animate-in fade-in slide-in-from-left-2 items-center gap-3 duration-300">
+                <div key={index} className="rounded-xl border border-border bg-background p-3 animate-in fade-in slide-in-from-left-2 duration-300">
                   <input
                     type="text"
                     required
                     placeholder="Ej: Corte clásico"
                     value={service.name}
                     onChange={(e) => handleServiceChange(index, "name", e.target.value)}
-                    className="block flex-1 rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground/20"
+                    className="w-full rounded-lg border border-border bg-secondary/30 px-3 py-2.5 text-sm font-bold text-foreground placeholder:text-muted-foreground/40 focus:border-primary focus:outline-none transition-all"
                   />
-                  <div className="relative w-28">
-                    <input
-                      type="number"
-                      required
-                      min="0"
-                      step="0.5"
-                      placeholder="20"
-                      value={service.price}
-                      onChange={(e) => handleServiceChange(index, "price", e.target.value)}
-                      className="block w-full rounded-xl border border-border bg-background px-4 py-3 text-center text-sm font-black text-primary focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary transition-all placeholder:text-primary/30"
-                    />
-                    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-xs font-black text-primary/50">€</span>
-                  </div>
-                  <div className="w-28">
+                  <div className="mt-2 flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">€</span>
+                      <input
+                        type="number"
+                        required
+                        min="0"
+                        step="0.5"
+                        placeholder="20"
+                        value={service.price}
+                        onChange={(e) => handleServiceChange(index, "price", e.target.value)}
+                        className="w-full rounded-lg border border-border bg-secondary/30 py-2.5 pl-6 pr-3 text-sm font-black text-primary focus:border-primary focus:outline-none transition-all"
+                      />
+                    </div>
                     <select
                       value={service.duration}
                       onChange={(e) => handleServiceChange(index, "duration", e.target.value)}
-                      className="block w-full rounded-xl border border-border bg-background px-3 py-3 text-sm font-bold text-muted-foreground focus:border-primary focus:outline-none transition-all"
+                      className="flex-1 rounded-lg border border-border bg-secondary/30 px-2 py-2.5 text-sm font-bold text-muted-foreground focus:border-primary focus:outline-none transition-all"
                     >
                       <option value="15">15 min</option>
                       <option value="30">30 min</option>
@@ -449,16 +465,16 @@ export default function OnboardingPage() {
                       <option value="90">1h 30m</option>
                       <option value="120">2h</option>
                     </select>
+                    {services.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => setServices(services.filter((_, i) => i !== index))}
+                        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
+                    )}
                   </div>
-                  {services.length > 1 && (
-                    <button
-                      type="button"
-                      onClick={() => setServices(services.filter((_, i) => i !== index))}
-                      className="flex h-11 w-11 items-center justify-center rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500 hover:text-white transition-all"
-                    >
-                      <TrashIcon className="h-4 w-4" />
-                    </button>
-                  )}
                 </div>
               ))}
             </div>
