@@ -1,4 +1,5 @@
 "use client";
+export const runtime = "edge";
 
 import { use, useState, useEffect } from "react";
 import Link from "next/link";
@@ -79,7 +80,9 @@ export default function ReservaPage({
     }
     const phoneClean = phone.replace(/\s/g, "");
     if (!/^[6-9]\d{8}$/.test(phoneClean)) {
-      alert("Introduce un teléfono español válido (9 dígitos, empieza por 6, 7, 8 o 9).");
+      alert(
+        "Introduce un teléfono español válido (9 dígitos, empieza por 6, 7, 8 o 9).",
+      );
       return;
     }
 
@@ -87,7 +90,11 @@ export default function ReservaPage({
   };
 
   const executeBooking = async () => {
-    const success = await handleCreateBooking(user?.id || null, name.trim(), phone.replace(/\s/g, ""));
+    const success = await handleCreateBooking(
+      user?.id || null,
+      name.trim(),
+      phone.replace(/\s/g, ""),
+    );
     if (success) {
       setTimeout(() => {
         if (user) {
@@ -106,8 +113,13 @@ export default function ReservaPage({
           <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-muted text-muted-foreground">
             <SadFaceIcon className="h-8 w-8" />
           </div>
-          <h1 className="mb-2 text-2xl font-bold text-foreground">Barbería no encontrada</h1>
-          <Link href="/explorar" className="inline-flex items-center rounded-xl bg-primary px-6 py-3 font-bold text-primary-foreground transition-all hover:scale-[1.02]">
+          <h1 className="mb-2 text-2xl font-bold text-foreground">
+            Barbería no encontrada
+          </h1>
+          <Link
+            href="/explorar"
+            className="inline-flex items-center rounded-xl bg-primary px-6 py-3 font-bold text-primary-foreground transition-all hover:scale-[1.02]"
+          >
             Volver al listado
           </Link>
         </div>
@@ -126,7 +138,6 @@ export default function ReservaPage({
   return (
     <main className="min-h-screen bg-background">
       <div className="mx-auto max-w-2xl px-4 py-8 sm:px-6 sm:py-12 md:py-16">
-
         {/* Header */}
         <div className="mb-6">
           <Link
@@ -140,12 +151,14 @@ export default function ReservaPage({
             Reserva tu <span className="text-primary">Cita</span>
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            En <span className="font-bold text-foreground">{barber?.full_name}</span>
+            En{" "}
+            <span className="font-bold text-foreground">
+              {barber?.full_name}
+            </span>
           </p>
         </div>
 
         <form onSubmit={onBookingSubmit} className="space-y-6">
-
           {/* ── PASO 1: Profesional ── */}
           <div className="rounded-2xl border border-border bg-card p-4 sm:p-6">
             <StepLabel number={1} title="Profesional" />
@@ -154,25 +167,37 @@ export default function ReservaPage({
                 <button
                   key={member.id}
                   type="button"
-                  onClick={() => { setSelectedStaff(member); setSelectedTime(""); }}
+                  onClick={() => {
+                    setSelectedStaff(member);
+                    setSelectedTime("");
+                  }}
                   className={`relative flex shrink-0 flex-col items-center rounded-xl border p-3 transition-all
-                    ${selectedStaff?.id === member.id
-                      ? "border-primary bg-primary/10"
-                      : "border-border bg-background hover:border-primary/40"
+                    ${
+                      selectedStaff?.id === member.id
+                        ? "border-primary bg-primary/10"
+                        : "border-border bg-background hover:border-primary/40"
                     }`}
                   style={{ minWidth: "88px" }}
                 >
                   {/* Avatar */}
                   <div className="relative mb-2 h-12 w-12 overflow-hidden rounded-full border-2 border-background shadow">
                     {member.avatar_url ? (
-                      <Image src={member.avatar_url} alt={member.name} fill className="object-cover" unoptimized />
+                      <Image
+                        src={member.avatar_url}
+                        alt={member.name}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
                     ) : (
                       <div className="flex h-full w-full items-center justify-center bg-muted text-base font-black text-muted-foreground">
                         {member.name.charAt(0)}
                       </div>
                     )}
                   </div>
-                  <span className={`w-full text-center text-xs font-black leading-tight ${selectedStaff?.id === member.id ? "text-primary" : "text-foreground"}`}>
+                  <span
+                    className={`w-full text-center text-xs font-black leading-tight ${selectedStaff?.id === member.id ? "text-primary" : "text-foreground"}`}
+                  >
                     {member.name}
                   </span>
                   <span className="mt-0.5 text-[9px] font-bold uppercase tracking-wider text-muted-foreground/60">
@@ -203,7 +228,10 @@ export default function ReservaPage({
                     <button
                       key={idx}
                       type="button"
-                      onClick={() => { setSelectedService(service); setSelectedTime(""); }}
+                      onClick={() => {
+                        setSelectedService(service);
+                        setSelectedTime("");
+                      }}
                       className={`flex w-full items-center rounded-xl border px-4 py-3 text-left transition-all ${
                         isSelected
                           ? "border-primary bg-primary/10"
@@ -211,28 +239,39 @@ export default function ReservaPage({
                       }`}
                     >
                       {/* Icono indicador */}
-                      <div className={`mr-3 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 transition-all ${
-                        isSelected ? "border-primary bg-primary text-primary-foreground" : "border-border text-muted-foreground"
-                      }`}>
-                        {isSelected
-                          ? <CheckCircleIcon className="h-4 w-4" />
-                          : <ScissorsIcon className="h-3.5 w-3.5" />
-                        }
+                      <div
+                        className={`mr-3 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 transition-all ${
+                          isSelected
+                            ? "border-primary bg-primary text-primary-foreground"
+                            : "border-border text-muted-foreground"
+                        }`}
+                      >
+                        {isSelected ? (
+                          <CheckCircleIcon className="h-4 w-4" />
+                        ) : (
+                          <ScissorsIcon className="h-3.5 w-3.5" />
+                        )}
                       </div>
 
                       {/* Nombre + detalles */}
                       <div className="min-w-0 flex-1">
-                        <p className={`truncate text-sm font-black ${isSelected ? "text-primary" : "text-foreground"}`}>
+                        <p
+                          className={`truncate text-sm font-black ${isSelected ? "text-primary" : "text-foreground"}`}
+                        >
                           {service.name}
                         </p>
                         <p className="mt-0.5 flex items-center gap-1.5 text-xs text-muted-foreground">
                           <ClockIcon className="h-3 w-3 shrink-0" />
-                          <span>{formatDuration(service.duration_minutes ?? 30)}</span>
+                          <span>
+                            {formatDuration(service.duration_minutes ?? 30)}
+                          </span>
                         </p>
                       </div>
 
                       {/* Precio — siempre visible a la derecha */}
-                      <span className={`ml-3 shrink-0 text-base font-black ${isSelected ? "text-primary" : "text-foreground"}`}>
+                      <span
+                        className={`ml-3 shrink-0 text-base font-black ${isSelected ? "text-primary" : "text-foreground"}`}
+                      >
                         {dateUtils.formatPrice(service.price)}
                       </span>
                     </button>
@@ -256,7 +295,10 @@ export default function ReservaPage({
                   required
                   min={dateUtils.getTodayString()}
                   value={selectedDate}
-                  onChange={(e) => { setSelectedDate(e.target.value); setSelectedTime(""); }}
+                  onChange={(e) => {
+                    setSelectedDate(e.target.value);
+                    setSelectedTime("");
+                  }}
                   className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground transition-all focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary [color-scheme:dark]"
                 />
               </div>
@@ -268,7 +310,8 @@ export default function ReservaPage({
                     Horarios disponibles
                     {selectedService && (
                       <span className="ml-1.5 normal-case font-normal text-muted-foreground/60">
-                        · {formatDuration(selectedService.duration_minutes ?? 30)}
+                        ·{" "}
+                        {formatDuration(selectedService.duration_minutes ?? 30)}
                       </span>
                     )}
                   </label>
@@ -336,29 +379,46 @@ export default function ReservaPage({
           <div className="space-y-4">
             {selectedService && selectedDate && selectedTime && (
               <div className="rounded-2xl border border-primary/20 bg-primary/5 p-4">
-                <p className="mb-3 text-[10px] font-black uppercase tracking-widest text-primary">Resumen de tu cita</p>
+                <p className="mb-3 text-[10px] font-black uppercase tracking-widest text-primary">
+                  Resumen de tu cita
+                </p>
                 <div className="space-y-2 text-sm">
                   <div className="flex items-start justify-between gap-2">
                     <span className="text-muted-foreground">Servicio</span>
-                    <span className="text-right font-bold text-foreground">{selectedService.name}</span>
+                    <span className="text-right font-bold text-foreground">
+                      {selectedService.name}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Duración</span>
-                    <span className="font-bold text-foreground">{formatDuration(selectedService.duration_minutes ?? 30)}</span>
+                    <span className="font-bold text-foreground">
+                      {formatDuration(selectedService.duration_minutes ?? 30)}
+                    </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-muted-foreground">Horario</span>
                     <span className="font-bold text-foreground">
-                      {selectedTime} → {(() => {
+                      {selectedTime} →{" "}
+                      {(() => {
                         const [h, m] = selectedTime.split(":").map(Number);
-                        const end = new Date(0, 0, 0, h, m + (selectedService.duration_minutes ?? 30));
+                        const end = new Date(
+                          0,
+                          0,
+                          0,
+                          h,
+                          m + (selectedService.duration_minutes ?? 30),
+                        );
                         return `${String(end.getHours()).padStart(2, "0")}:${String(end.getMinutes()).padStart(2, "0")}`;
                       })()}
                     </span>
                   </div>
                   <div className="flex justify-between border-t border-primary/10 pt-2">
-                    <span className="font-bold text-muted-foreground">Total</span>
-                    <span className="text-base font-black text-primary">{dateUtils.formatPrice(selectedService.price)}</span>
+                    <span className="font-bold text-muted-foreground">
+                      Total
+                    </span>
+                    <span className="text-base font-black text-primary">
+                      {dateUtils.formatPrice(selectedService.price)}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -366,7 +426,13 @@ export default function ReservaPage({
 
             <button
               type="submit"
-              disabled={actionLoading || !selectedStaff || !selectedService || !selectedDate || !selectedTime}
+              disabled={
+                actionLoading ||
+                !selectedStaff ||
+                !selectedService ||
+                !selectedDate ||
+                !selectedTime
+              }
               className="w-full rounded-2xl bg-primary py-4 text-base font-black text-primary-foreground shadow-xl shadow-primary/20 transition-all hover:opacity-90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40"
             >
               {actionLoading ? (
@@ -380,11 +446,13 @@ export default function ReservaPage({
             </button>
 
             {message && (
-              <div className={`rounded-xl border p-3 text-center text-sm font-bold ${
-                message.includes("Error")
-                  ? "border-red-500/20 bg-red-500/10 text-red-400"
-                  : "border-primary/20 bg-primary/10 text-primary"
-              }`}>
+              <div
+                className={`rounded-xl border p-3 text-center text-sm font-bold ${
+                  message.includes("Error")
+                    ? "border-red-500/20 bg-red-500/10 text-red-400"
+                    : "border-primary/20 bg-primary/10 text-primary"
+                }`}
+              >
                 {message}
               </div>
             )}
@@ -392,7 +460,11 @@ export default function ReservaPage({
         </form>
       </div>
 
-      <AuthModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} onSuccess={() => setShowAuthModal(false)} />
+      <AuthModal
+        isOpen={showAuthModal}
+        onClose={() => setShowAuthModal(false)}
+        onSuccess={() => setShowAuthModal(false)}
+      />
     </main>
   );
 }
@@ -408,4 +480,3 @@ function StepLabel({ number, title }: { number: number; title: string }) {
     </div>
   );
 }
-

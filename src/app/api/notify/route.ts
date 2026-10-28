@@ -1,15 +1,20 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
+export const runtime = "edge";
 
 const resend = new Resend(process.env.RESEND_API_KEY || "re_dummykey");
 
 // Admin client to fetch user emails (auth schema is private)
 const getSupabaseAdmin = () => {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const key =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) {
-    throw new Error("Missing Supabase environment variables: supabaseUrl and key are required.");
+    throw new Error(
+      "Missing Supabase environment variables: supabaseUrl and key are required.",
+    );
   }
   return createClient(url, key);
 };
@@ -20,13 +25,17 @@ export async function POST(request: Request) {
     const { type, appointmentId } = await request.json();
 
     if (!appointmentId) {
-      return NextResponse.json({ error: "Falta appointmentId" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Falta appointmentId" },
+        { status: 400 },
+      );
     }
 
     // 1. Obtener detalles de la cita con relaciones
     const { data: appointment, error: fetchError } = await supabaseAdmin
       .from("appointments")
-      .select(`
+      .select(
+        `
         *,
         barbershops (
           full_name,
@@ -36,13 +45,17 @@ export async function POST(request: Request) {
           name,
           user_id
         )
-      `)
+      `,
+      )
       .eq("id", appointmentId)
       .single();
 
     if (fetchError || !appointment) {
       console.error("Error al obtener cita:", fetchError);
-      return NextResponse.json({ error: "Cita no encontrada" }, { status: 404 });
+      return NextResponse.json(
+        { error: "Cita no encontrada" },
+        { status: 404 },
+      );
     }
 
     // 2. Obtener correos electrónicos de los involucrados
@@ -62,31 +75,48 @@ export async function POST(request: Request) {
 
       if (client_id) {
         emailPromises.push(
-          supabaseAdmin.auth.admin.getUserById(client_id).then(res => {
-            if (res.data?.user?.email) clientEmail = res.data.user.email;
-          }).catch(err => console.error("Error al obtener email del cliente:", err))
+          supabaseAdmin.auth.admin
+            .getUserById(client_id)
+            .then((res) => {
+              if (res.data?.user?.email) clientEmail = res.data.user.email;
+            })
+            .catch((err) =>
+              console.error("Error al obtener email del cliente:", err),
+            ),
         );
       }
 
       if (staff_user_id) {
         emailPromises.push(
-          supabaseAdmin.auth.admin.getUserById(staff_user_id).then(res => {
-            if (res.data?.user?.email) staffEmail = res.data.user.email;
-          }).catch(err => console.error("Error al obtener email del staff:", err))
+          supabaseAdmin.auth.admin
+            .getUserById(staff_user_id)
+            .then((res) => {
+              if (res.data?.user?.email) staffEmail = res.data.user.email;
+            })
+            .catch((err) =>
+              console.error("Error al obtener email del staff:", err),
+            ),
         );
       }
 
       if (owner_user_id && owner_user_id !== staff_user_id) {
         emailPromises.push(
-          supabaseAdmin.auth.admin.getUserById(owner_user_id).then(res => {
-            if (res.data?.user?.email) ownerEmail = res.data.user.email;
-          }).catch(err => console.error("Error al obtener email del dueño:", err))
+          supabaseAdmin.auth.admin
+            .getUserById(owner_user_id)
+            .then((res) => {
+              if (res.data?.user?.email) ownerEmail = res.data.user.email;
+            })
+            .catch((err) =>
+              console.error("Error al obtener email del dueño:", err),
+            ),
         );
       }
 
       await Promise.all(emailPromises);
     } else {
-      console.warn("SUPABASE_SERVICE_ROLE_KEY no está configurada. Simulación de emails activada.");
+      console.warn(
+        "SUPABASE_SERVICE_ROLE_KEY no está configurada. Simulación de emails activada.",
+      );
       clientEmail = "oficialbestyle@gmail.com";
       staffEmail = "oficialbestyle@gmail.com";
       ownerEmail = "oficialbestyle@gmail.com";
@@ -179,7 +209,7 @@ export async function POST(request: Request) {
 
     if (type === "booking") {
       // --- NOTIFICACIÓN DE NUEVA RESERVA ---
-      
+
       // A) Para el cliente
       if (clientEmail) {
         const clientHtml = `
@@ -215,15 +245,19 @@ export async function POST(request: Request) {
 
         if (isResendConfigured) {
           sendResults.push(
-            resend.emails.send({
-              from: `${appointment.barbershops?.full_name || "Barberia"} <onboarding@resend.dev>`,
-              to: clientEmail,
-              subject: `Reserva Confirmada - ${appointment.barbershops?.full_name}`,
-              html: clientHtml,
-            }).catch(e => ({ error: e }))
+            resend.emails
+              .send({
+                from: `${appointment.barbershops?.full_name || "Barberia"} <onboarding@resend.dev>`,
+                to: clientEmail,
+                subject: `Reserva Confirmada - ${appointment.barbershops?.full_name}`,
+                html: clientHtml,
+              })
+              .catch((e) => ({ error: e })),
           );
         } else {
-          console.log(`[Simulación] Correo enviado a Cliente (${clientEmail}): Reserva Confirmada`);
+          console.log(
+            `[Simulación] Correo enviado a Cliente (${clientEmail}): Reserva Confirmada`,
+          );
         }
       }
 
@@ -261,18 +295,21 @@ export async function POST(request: Request) {
 
         if (isResendConfigured) {
           sendResults.push(
-            resend.emails.send({
-              from: "Barber App <onboarding@resend.dev>",
-              to: staffEmail,
-              subject: `Nueva Cita - ${appointment.customer_name}`,
-              html: staffHtml,
-            }).catch(e => ({ error: e }))
+            resend.emails
+              .send({
+                from: "Barber App <onboarding@resend.dev>",
+                to: staffEmail,
+                subject: `Nueva Cita - ${appointment.customer_name}`,
+                html: staffHtml,
+              })
+              .catch((e) => ({ error: e })),
           );
         } else {
-          console.log(`[Simulación] Correo enviado a Barbero (${staffEmail}): Nueva Cita`);
+          console.log(
+            `[Simulación] Correo enviado a Barbero (${staffEmail}): Nueva Cita`,
+          );
         }
       }
-
     } else if (type === "cancel") {
       // --- NOTIFICACIÓN DE CANCELACIÓN ---
 
@@ -311,15 +348,19 @@ export async function POST(request: Request) {
 
         if (isResendConfigured) {
           sendResults.push(
-            resend.emails.send({
-              from: `${appointment.barbershops?.full_name || "Barberia"} <onboarding@resend.dev>`,
-              to: clientEmail,
-              subject: `Cita Cancelada - ${appointment.barbershops?.full_name}`,
-              html: clientHtml,
-            }).catch(e => ({ error: e }))
+            resend.emails
+              .send({
+                from: `${appointment.barbershops?.full_name || "Barberia"} <onboarding@resend.dev>`,
+                to: clientEmail,
+                subject: `Cita Cancelada - ${appointment.barbershops?.full_name}`,
+                html: clientHtml,
+              })
+              .catch((e) => ({ error: e })),
           );
         } else {
-          console.log(`[Simulación] Correo enviado a Cliente (${clientEmail}): Cita Cancelada`);
+          console.log(
+            `[Simulación] Correo enviado a Cliente (${clientEmail}): Cita Cancelada`,
+          );
         }
       }
 
@@ -356,15 +397,19 @@ export async function POST(request: Request) {
 
         if (isResendConfigured) {
           sendResults.push(
-            resend.emails.send({
-              from: "Barber App <onboarding@resend.dev>",
-              to: staffEmail,
-              subject: `Cita Cancelada - ${appointment.customer_name}`,
-              html: staffHtml,
-            }).catch(e => ({ error: e }))
+            resend.emails
+              .send({
+                from: "Barber App <onboarding@resend.dev>",
+                to: staffEmail,
+                subject: `Cita Cancelada - ${appointment.customer_name}`,
+                html: staffHtml,
+              })
+              .catch((e) => ({ error: e })),
           );
         } else {
-          console.log(`[Simulación] Correo enviado a Barbero (${staffEmail}): Cita Cancelada`);
+          console.log(
+            `[Simulación] Correo enviado a Barbero (${staffEmail}): Cita Cancelada`,
+          );
         }
       }
     }
@@ -380,9 +425,11 @@ export async function POST(request: Request) {
       clientEmail,
       staffEmail,
     });
-
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error en notify API route:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { error: (error as Error).message },
+      { status: 500 },
+    );
   }
 }

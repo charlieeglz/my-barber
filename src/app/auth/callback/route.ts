@@ -2,13 +2,20 @@ import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { createServerClient, type CookieOptions } from "@supabase/ssr";
 import { createClient } from "@supabase/supabase-js";
+export const runtime = "edge";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");
   const cookieStore = await cookies();
-  const pendingRole = cookieStore.get("sb-pending-role")?.value as "barber" | "client" | null;
-  const roleParam = (searchParams.get("role") || pendingRole) as "barber" | "client" | null;
+  const pendingRole = cookieStore.get("sb-pending-role")?.value as
+    | "barber"
+    | "client"
+    | null;
+  const roleParam = (searchParams.get("role") || pendingRole) as
+    | "barber"
+    | "client"
+    | null;
   const next = searchParams.get("next") ?? "/cliente";
 
   if (code) {
@@ -33,7 +40,9 @@ export async function GET(request: Request) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
 
       // Si el usuario no tiene rol aún (primer login con Google) y se pasó un rol,
       // lo guardamos en los metadatos del usuario
@@ -45,28 +54,41 @@ export async function GET(request: Request) {
         if (serviceKey) {
           const supabaseAdmin = createClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            serviceKey
+            serviceKey,
           );
-          const { error: updateError } = await supabaseAdmin.auth.admin.updateUserById(user.id, {
-            user_metadata: {
-              ...user.user_metadata,
-              role: roleParam,
-            }
-          });
+          const { error: updateError } =
+            await supabaseAdmin.auth.admin.updateUserById(user.id, {
+              user_metadata: {
+                ...user.user_metadata,
+                role: roleParam,
+              },
+            });
           if (updateError) {
-            console.error("Error updating user metadata via admin client:", updateError);
-            return NextResponse.redirect(`${origin}/login?error=admin_update_error_${encodeURIComponent(updateError.message)}`);
+            console.error(
+              "Error updating user metadata via admin client:",
+              updateError,
+            );
+            return NextResponse.redirect(
+              `${origin}/login?error=admin_update_error_${encodeURIComponent(updateError.message)}`,
+            );
           }
         } else {
-          console.warn("SUPABASE_SERVICE_ROLE_KEY is missing. Falling back to authenticated client.auth.updateUser");
+          console.warn(
+            "SUPABASE_SERVICE_ROLE_KEY is missing. Falling back to authenticated client.auth.updateUser",
+          );
           const { error: updateError } = await supabase.auth.updateUser({
             data: {
               role: roleParam,
             },
           });
           if (updateError) {
-            console.error("Error updating user metadata via authenticated client:", updateError);
-            return NextResponse.redirect(`${origin}/login?error=user_update_error_${encodeURIComponent(updateError.message)}`);
+            console.error(
+              "Error updating user metadata via authenticated client:",
+              updateError,
+            );
+            return NextResponse.redirect(
+              `${origin}/login?error=user_update_error_${encodeURIComponent(updateError.message)}`,
+            );
           }
         }
       }

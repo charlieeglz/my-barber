@@ -1,15 +1,20 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
+export const runtime = "edge";
 
 const resend = new Resend(process.env.RESEND_API_KEY || "re_dummykey");
 
 // Admin client to query and update appointments
 const getSupabaseAdmin = () => {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const key =
+    process.env.SUPABASE_SERVICE_ROLE_KEY ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   if (!url || !key) {
-    throw new Error("Missing Supabase environment variables: supabaseUrl and key are required.");
+    throw new Error(
+      "Missing Supabase environment variables: supabaseUrl and key are required.",
+    );
   }
   return createClient(url, key);
 };
@@ -19,7 +24,10 @@ export async function GET(request: Request) {
   try {
     // 1. Verificación de seguridad opcional (si se configura CRON_SECRET)
     const authHeader = request.headers.get("authorization");
-    if (process.env.CRON_SECRET && authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+    if (
+      process.env.CRON_SECRET &&
+      authHeader !== `Bearer ${process.env.CRON_SECRET}`
+    ) {
       return NextResponse.json({ error: "No autorizado" }, { status: 401 });
     }
 
@@ -30,7 +38,8 @@ export async function GET(request: Request) {
     // 2. Consultar citas pendientes que no tengan recordatorio enviado
     const { data: appointments, error: queryError } = await supabaseAdmin
       .from("appointments")
-      .select(`
+      .select(
+        `
         *,
         barbershops (
           full_name,
@@ -40,7 +49,8 @@ export async function GET(request: Request) {
           name,
           user_id
         )
-      `)
+      `,
+      )
       .eq("status", "pending")
       .eq("reminder_sent", false)
       .gte("appointment_date", now.toISOString())
@@ -52,7 +62,10 @@ export async function GET(request: Request) {
     }
 
     if (!appointments || appointments.length === 0) {
-      return NextResponse.json({ message: "No hay citas pendientes de recordatorio en las próximas 2 horas." });
+      return NextResponse.json({
+        message:
+          "No hay citas pendientes de recordatorio en las próximas 2 horas.",
+      });
     }
 
     const isResendConfigured = !!process.env.RESEND_API_KEY;
@@ -114,13 +127,18 @@ export async function GET(request: Request) {
 
     for (const apt of appointments) {
       let clientEmail = "";
-      
+
       if (hasServiceKey && apt.client_id) {
         try {
-          const { data } = await supabaseAdmin.auth.admin.getUserById(apt.client_id);
+          const { data } = await supabaseAdmin.auth.admin.getUserById(
+            apt.client_id,
+          );
           if (data?.user?.email) clientEmail = data.user.email;
         } catch (e) {
-          console.error(`Error al obtener email para cliente ${apt.client_id}:`, e);
+          console.error(
+            `Error al obtener email para cliente ${apt.client_id}:`,
+            e,
+          );
         }
       } else {
         clientEmail = "oficialbestyle@gmail.com";
@@ -176,11 +194,16 @@ export async function GET(request: Request) {
               html,
             });
           } catch (e) {
-            console.error(`Error al enviar correo de recordatorio a ${clientEmail}:`, e);
+            console.error(
+              `Error al enviar correo de recordatorio a ${clientEmail}:`,
+              e,
+            );
             continue; // No marcar como enviado si falló el correo
           }
         } else {
-          console.log(`[Simulación] Recordatorio de cita enviado a Cliente (${clientEmail}) para las ${formattedTime}`);
+          console.log(
+            `[Simulación] Recordatorio de cita enviado a Cliente (${clientEmail}) para las ${formattedTime}`,
+          );
         }
 
         // 3. Marcar como enviado en la BD
@@ -190,7 +213,10 @@ export async function GET(request: Request) {
           .eq("id", apt.id);
 
         if (updateError) {
-          console.error(`Error al actualizar reminder_sent para cita ${apt.id}:`, updateError);
+          console.error(
+            `Error al actualizar reminder_sent para cita ${apt.id}:`,
+            updateError,
+          );
         } else {
           notifiedIds.push(apt.id);
         }
@@ -201,11 +227,13 @@ export async function GET(request: Request) {
       success: true,
       processed: appointments.length,
       notifiedIds,
-      simulated: !isResendConfigured
+      simulated: !isResendConfigured,
     });
-
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error en cron reminders API route:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { error: (error as Error).message },
+      { status: 500 },
+    );
   }
 }

@@ -1,5 +1,5 @@
 "use client";
-
+export const runtime = "edge";
 import { use, useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -70,9 +70,16 @@ export default function BarberProfile({
           <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-muted text-muted-foreground">
             <SadFaceIcon className="h-8 w-8" />
           </div>
-          <h1 className="mb-2 text-2xl font-bold text-foreground">Barbería no encontrada</h1>
-          <p className="mb-8 text-muted-foreground">Lo sentimos, el perfil que buscas no existe o ha sido movido.</p>
-          <Link href="/explorar" className="inline-flex items-center rounded-xl bg-primary px-6 py-3 font-bold text-primary-foreground transition-all hover:scale-[1.02]">
+          <h1 className="mb-2 text-2xl font-bold text-foreground">
+            Barbería no encontrada
+          </h1>
+          <p className="mb-8 text-muted-foreground">
+            Lo sentimos, el perfil que buscas no existe o ha sido movido.
+          </p>
+          <Link
+            href="/explorar"
+            className="inline-flex items-center rounded-xl bg-primary px-6 py-3 font-bold text-primary-foreground transition-all hover:scale-[1.02]"
+          >
             Explorar otras barberías
           </Link>
         </div>
@@ -104,9 +111,12 @@ export default function BarberProfile({
           <div className="h-full w-full bg-gradient-to-b from-secondary to-background" />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
-        
+
         {/* Back button */}
-        <Link href="/explorar" className="absolute left-6 top-6 flex h-10 w-10 items-center justify-center rounded-full bg-background/50 text-foreground backdrop-blur-md transition-all hover:bg-background">
+        <Link
+          href="/explorar"
+          className="absolute left-6 top-6 flex h-10 w-10 items-center justify-center rounded-full bg-background/50 text-foreground backdrop-blur-md transition-all hover:bg-background"
+        >
           <ArrowLeftIcon className="h-5 w-5" />
         </Link>
       </div>
@@ -136,7 +146,8 @@ export default function BarberProfile({
             <div className="flex flex-wrap items-center justify-center gap-4 text-muted-foreground md:justify-start">
               <span className="flex items-center gap-1.5 font-medium">
                 <ScissorsIcon className="h-4 w-4 text-primary" />
-                {barber?.num_barbers} {barber?.num_barbers === 1 ? 'especialista' : 'especialistas'}
+                {barber?.num_barbers}{" "}
+                {barber?.num_barbers === 1 ? "especialista" : "especialistas"}
               </span>
               {barber?.location && (
                 <span className="flex items-center gap-1.5 font-medium">
@@ -148,7 +159,9 @@ export default function BarberProfile({
                 <span className="flex items-center gap-1.5 rounded-full border border-primary/20 bg-primary/10 px-3 py-1 font-bold text-primary">
                   <StarFilledIcon className="h-4 w-4" />
                   {reviewStats.average}
-                  <span className="font-normal text-muted-foreground">({reviewStats.total})</span>
+                  <span className="font-normal text-muted-foreground">
+                    ({reviewStats.total})
+                  </span>
                 </span>
               )}
             </div>
@@ -161,7 +174,9 @@ export default function BarberProfile({
             {/* Servicios */}
             <section className="mb-12">
               <div className="mb-5 flex items-center gap-4">
-                <h2 className="text-xl font-black tracking-tight text-foreground sm:text-2xl">Servicios y Tarifas</h2>
+                <h2 className="text-xl font-black tracking-tight text-foreground sm:text-2xl">
+                  Servicios y Tarifas
+                </h2>
                 <div className="h-px flex-1 bg-border" />
               </div>
 
@@ -179,7 +194,9 @@ export default function BarberProfile({
 
                       {/* Nombre + duración */}
                       <div className="min-w-0 flex-1">
-                        <p className="truncate text-sm font-bold text-foreground">{service.name}</p>
+                        <p className="truncate text-sm font-bold text-foreground">
+                          {service.name}
+                        </p>
                         {service.duration_minutes && (
                           <p className="mt-0.5 flex items-center gap-1 text-xs text-muted-foreground">
                             <ClockIcon className="h-3 w-3 shrink-0" />
@@ -187,8 +204,7 @@ export default function BarberProfile({
                               ? `${service.duration_minutes} min`
                               : service.duration_minutes % 60 === 0
                                 ? `${Math.floor(service.duration_minutes / 60)}h`
-                                : `${Math.floor(service.duration_minutes / 60)}h ${service.duration_minutes % 60}min`
-                            }
+                                : `${Math.floor(service.duration_minutes / 60)}h ${service.duration_minutes % 60}min`}
                           </p>
                         )}
                       </div>
@@ -210,7 +226,9 @@ export default function BarberProfile({
             {/* Portfolio */}
             <section className="mb-12">
               <div className="mb-8 flex items-center justify-between">
-                <h2 className="text-2xl font-black tracking-tight text-foreground">Portfolio</h2>
+                <h2 className="text-2xl font-black tracking-tight text-foreground">
+                  Portfolio
+                </h2>
                 <div className="h-px flex-1 bg-border mx-6 hidden sm:block" />
               </div>
               {photos.length === 0 ? (
@@ -218,7 +236,9 @@ export default function BarberProfile({
                   <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-muted text-muted-foreground">
                     <CameraIcon className="h-6 w-6" />
                   </div>
-                  <p className="font-medium">Aún no hay trabajos en la galería.</p>
+                  <p className="font-medium">
+                    Aún no hay trabajos en la galería.
+                  </p>
                 </div>
               ) : (
                 <div className="grid grid-cols-2 gap-4 sm:grid-cols-3">
@@ -244,12 +264,18 @@ export default function BarberProfile({
             {/* Reseñas */}
             <section>
               <div className="mb-6 flex items-center gap-4">
-                <h2 className="text-2xl font-black tracking-tight text-foreground">Reseñas</h2>
+                <h2 className="text-2xl font-black tracking-tight text-foreground">
+                  Reseñas
+                </h2>
                 {reviewStats.total > 0 && (
                   <div className="flex items-center gap-2 rounded-full border border-primary/20 bg-primary/10 px-3 py-1">
                     <StarFilledIcon className="h-4 w-4 text-primary" />
-                    <span className="font-black text-primary">{reviewStats.average}</span>
-                    <span className="text-xs text-muted-foreground">({reviewStats.total} reseñas)</span>
+                    <span className="font-black text-primary">
+                      {reviewStats.average}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      ({reviewStats.total} reseñas)
+                    </span>
                   </div>
                 )}
                 <div className="h-px flex-1 bg-border" />
@@ -258,8 +284,12 @@ export default function BarberProfile({
               {reviews.length === 0 ? (
                 <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-border bg-secondary/10 py-12 text-center text-muted-foreground">
                   <StarOutlineIcon className="mb-3 h-10 w-10 opacity-30" />
-                  <p className="font-medium">Aún no hay reseñas para esta barbería.</p>
-                  <p className="mt-1 text-sm">¡Sé el primero en compartir tu experiencia!</p>
+                  <p className="font-medium">
+                    Aún no hay reseñas para esta barbería.
+                  </p>
+                  <p className="mt-1 text-sm">
+                    ¡Sé el primero en compartir tu experiencia!
+                  </p>
                 </div>
               ) : (
                 <div className="flex flex-col gap-4">
@@ -275,17 +305,22 @@ export default function BarberProfile({
                             <StarFilledIcon
                               key={star}
                               className={`h-4 w-4 ${
-                                star <= review.rating ? "text-primary" : "text-border"
+                                star <= review.rating
+                                  ? "text-primary"
+                                  : "text-border"
                               }`}
                             />
                           ))}
                         </div>
                         <span className="shrink-0 text-xs text-muted-foreground">
-                          {new Date(review.created_at).toLocaleDateString("es-ES", {
-                            day: "numeric",
-                            month: "short",
-                            year: "numeric",
-                          })}
+                          {new Date(review.created_at).toLocaleDateString(
+                            "es-ES",
+                            {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                            },
+                          )}
                         </span>
                       </div>
                       {review.comment && (
@@ -295,7 +330,10 @@ export default function BarberProfile({
                       )}
                       {review.staff?.name && (
                         <p className="text-xs font-bold text-muted-foreground">
-                          Con <span className="text-primary">{review.staff.name}</span>
+                          Con{" "}
+                          <span className="text-primary">
+                            {review.staff.name}
+                          </span>
                         </p>
                       )}
                     </div>
@@ -311,17 +349,22 @@ export default function BarberProfile({
               {/* Card Reserva */}
               <div className="overflow-hidden rounded-3xl border border-border bg-secondary/50 p-8 shadow-2xl backdrop-blur-md">
                 <div className="absolute -right-12 -top-12 h-24 w-24 rounded-full bg-primary/10 blur-2xl" />
-                <h3 className="mb-2 text-2xl font-black text-foreground">Reserva</h3>
+                <h3 className="mb-2 text-2xl font-black text-foreground">
+                  Reserva
+                </h3>
                 <p className="mb-8 text-muted-foreground leading-relaxed">
-                  Asegura tu lugar con nosotros. Confirmación en tiempo real y recordatorios automáticos.
+                  Asegura tu lugar con nosotros. Confirmación en tiempo real y
+                  recordatorios automáticos.
                 </p>
-                
+
                 <button
                   onClick={handleReserveClick}
                   className="group relative flex w-full items-center justify-center gap-3 rounded-2xl bg-primary py-5 text-lg font-black text-primary-foreground shadow-xl shadow-primary/20 transition-all hover:scale-[1.02] active:scale-[0.98]"
                 >
                   <span>Reservar Cita</span>
-                  <span className="transition-transform group-hover:translate-x-1">→</span>
+                  <span className="transition-transform group-hover:translate-x-1">
+                    →
+                  </span>
                 </button>
 
                 <div className="mt-10 space-y-4 border-t border-border pt-8">
@@ -329,13 +372,17 @@ export default function BarberProfile({
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
                       <CheckIcon className="h-5 w-5" />
                     </div>
-                    <span className="font-semibold">Confirmación inmediata</span>
+                    <span className="font-semibold">
+                      Confirmación inmediata
+                    </span>
                   </div>
                   <div className="flex items-center gap-4 text-sm text-foreground">
                     <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
                       <CalendarIcon className="h-5 w-5" />
                     </div>
-                    <span className="font-semibold">Elige tu horario favorito</span>
+                    <span className="font-semibold">
+                      Elige tu horario favorito
+                    </span>
                   </div>
                 </div>
               </div>
@@ -343,12 +390,17 @@ export default function BarberProfile({
               {/* Mapa y Ubicación */}
               {barber?.location && (
                 <div className="overflow-hidden rounded-3xl border border-border bg-secondary/30 p-6 shadow-2xl backdrop-blur-md">
-                  <h3 className="mb-4 text-lg font-black text-foreground">Ubicación</h3>
+                  <h3 className="mb-4 text-lg font-black text-foreground">
+                    Ubicación
+                  </h3>
                   <div className="relative mb-4 aspect-video w-full overflow-hidden rounded-2xl border border-border bg-muted">
                     <iframe
                       width="100%"
                       height="100%"
-                      style={{ border: 0, filter: "grayscale(1) invert(0.9) contrast(1.2)" }}
+                      style={{
+                        border: 0,
+                        filter: "grayscale(1) invert(0.9) contrast(1.2)",
+                      }}
                       loading="lazy"
                       allowFullScreen
                       referrerPolicy="no-referrer-when-downgrade"
@@ -374,12 +426,11 @@ export default function BarberProfile({
         </div>
       </div>
 
-      <AuthModal 
-        isOpen={showAuthModal} 
+      <AuthModal
+        isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onSuccess={() => router.push(`/${barberSlug}/reserva`)}
       />
     </main>
   );
 }
-
