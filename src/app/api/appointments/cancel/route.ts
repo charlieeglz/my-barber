@@ -295,8 +295,11 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({ success: true, appointmentId });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Error en cancel API route:", error);
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json(
+      { error: (error as Error).message },
+      { status: 500 },
+    );
   }
 }
