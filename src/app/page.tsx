@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/hooks/useAuth";
 import { SearchIcon, ScissorsIcon, CalendarIcon } from "@/components/Icons";
 
@@ -36,8 +37,16 @@ export default function WelcomePage() {
       <div className="relative w-full max-w-5xl text-center mt-12 md:mt-4">
         <div className="absolute -top-24 left-1/2 -z-10 h-64 w-64 -translate-x-1/2 rounded-full bg-primary/10 blur-[100px]" />
         
-        <h1 className="mb-4 text-5xl font-extrabold tracking-tight text-foreground md:text-7xl">
-          4<span className="text-primary">KUTS</span>
+        <h1 className="mb-4 flex justify-center">
+          <span className="sr-only">4KUTS</span>
+          <Image
+            src="/4kuts.png"
+            alt="4KUTS - Barber Platform"
+            width={669}
+            height={373}
+            priority
+            className="h-auto w-72 md:w-[28rem]"
+          />
         </h1>
         
         <p className="mx-auto mb-16 max-w-2xl text-lg text-muted-foreground md:text-xl">
