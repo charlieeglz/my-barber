@@ -21,7 +21,14 @@ function LoginContent() {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
-  const [error, setError] = useState(isInactive ? "Tu sesión ha expirado por inactividad. Por favor, inicia sesión de nuevo." : "");
+  const urlError = searchParams.get("error");
+  const [error, setError] = useState(
+    isInactive
+      ? "Tu sesión ha expirado por inactividad. Por favor, inicia sesión de nuevo."
+      : urlError
+        ? `No se pudo iniciar sesión: ${urlError}`
+        : "",
+  );
   const [success, setSuccess] = useState(isConfirmed ? "¡Email confirmado con éxito! Ahora puedes iniciar sesión." : "");
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);

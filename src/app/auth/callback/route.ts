@@ -18,20 +18,29 @@ export async function GET(request: Request) {
     | null;
   const next = searchParams.get("next") ?? "/cliente";
 
+  // Cookies de sesión que Supabase quiere fijar; se aplican sobre la redirección
+  const pendingCookies: { name: string; value: string; options: CookieOptions }[] = [];
+  const redirectWithSession = (url: string) => {
+    const res = NextResponse.redirect(url);
+    pendingCookies.forEach(({ name, value, options }) =>
+      res.cookies.set(name, value, options),
+    );
+    res.cookies.delete("sb-pending-role");
+    return res;
+  };
+
   if (code) {
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
-          get(name: string) {
-            return cookieStore.get(name)?.value;
+          getAll() {
+            return cookieStore.getAll();
           },
-          set(name: string, value: string, options: CookieOptions) {
-            cookieStore.set(name, value, options);
-          },
-          remove(name: string, options: CookieOptions) {
-            cookieStore.delete(name);
+          setAll(cookiesToSet) {
+            // Guardamos las cookies para copiarlas en la respuesta de redirección
+            cookiesToSet.forEach((c) => pendingCookies.push(c));
           },
         },
       },
@@ -93,14 +102,19 @@ export async function GET(request: Request) {
         }
       }
 
-      // Limpiar la cookie de rol temporal
-      cookieStore.delete("sb-pending-role");
-
       const destination = resolvedRole === "barber" ? "/dashboard" : next;
-      return NextResponse.redirect(`${origin}${destination}`);
+      return redirectWithSession(`${origin}${destination}`);
     }
+
+    console.error("exchangeCodeForSession error:", error);
+    return NextResponse.redirect(
+      `${origin}/login?error=${encodeURIComponent(error.message)}`,
+    );
   }
 
   // Si algo falla, volver al login
-  return NextResponse.redirect(`${origin}/login?error=auth_callback_error`);
+  const oauthError = searchParams.get("error_description") || "auth_callback_error";
+  return NextResponse.redirect(
+    `${origin}/login?error=${encodeURIComponent(oauthError)}`,
+  );
 }

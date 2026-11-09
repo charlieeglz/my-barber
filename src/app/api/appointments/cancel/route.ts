@@ -3,6 +3,10 @@ import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 export const runtime = "edge";
 
+// Emails al barbero/dueño desactivados por defecto (lo ven en el dashboard).
+// Para activarlos: variable NOTIFY_STAFF_BY_EMAIL=true
+const NOTIFY_STAFF_BY_EMAIL = process.env.NOTIFY_STAFF_BY_EMAIL === "true";
+
 const resend = new Resend(process.env.RESEND_API_KEY || "re_dummykey");
 
 // Admin client to bypass RLS and update status
@@ -246,7 +250,7 @@ export async function POST(request: Request) {
     }
 
     // B) Enviar correo al barbero (staff)
-    if (staffEmail) {
+    if (staffEmail && NOTIFY_STAFF_BY_EMAIL) {
       const staffHtml = `
         <div style="${emailStyle}">
           <div style="${cardStyle}">
