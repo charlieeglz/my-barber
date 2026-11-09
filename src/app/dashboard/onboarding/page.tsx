@@ -236,7 +236,7 @@ export default function OnboardingPage() {
       <div className="w-full max-w-2xl">
         <div className="mb-12 text-center">
           <Link href="/" className="mb-8 inline-block text-3xl font-black tracking-tighter text-foreground">
-            Be<span className="text-primary">Style</span>
+            4<span className="text-primary">KUTS</span>
           </Link>
           <h1 className="text-3xl font-black text-foreground md:text-4xl">Configura tu Barbería</h1>
           <p className="mt-3 text-lg text-muted-foreground">Crea tu perfil profesional y empieza a recibir citas.</p>

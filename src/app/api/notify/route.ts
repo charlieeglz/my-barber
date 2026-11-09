@@ -287,7 +287,7 @@ export async function POST(request: Request) {
                 </p>
               </div>
               <div style="${footerStyle}">
-                &copy; ${new Date().getFullYear()} Barber App
+                &copy; ${new Date().getFullYear()} 4KUTS
               </div>
             </div>
           </div>
@@ -297,7 +297,7 @@ export async function POST(request: Request) {
           sendResults.push(
             resend.emails
               .send({
-                from: "Barber App <onboarding@resend.dev>",
+                from: "4KUTS <onboarding@resend.dev>",
                 to: staffEmail,
                 subject: `Nueva Cita - ${appointment.customer_name}`,
                 html: staffHtml,
@@ -389,7 +389,7 @@ export async function POST(request: Request) {
                 </p>
               </div>
               <div style="${footerStyle}">
-                &copy; ${new Date().getFullYear()} Barber App
+                &copy; ${new Date().getFullYear()} 4KUTS
               </div>
             </div>
           </div>
@@ -399,7 +399,7 @@ export async function POST(request: Request) {
           sendResults.push(
             resend.emails
               .send({
-                from: "Barber App <onboarding@resend.dev>",
+                from: "4KUTS <onboarding@resend.dev>",
                 to: staffEmail,
                 subject: `Cita Cancelada - ${appointment.customer_name}`,
                 html: staffHtml,

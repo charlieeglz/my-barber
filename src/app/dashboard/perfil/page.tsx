@@ -537,7 +537,7 @@ export default function EditProfilePage() {
                   <label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">URL de tu página</label>
                   <div className="flex items-center overflow-hidden rounded-xl border border-border bg-background transition-all focus-within:border-primary focus-within:ring-1 focus-within:ring-primary">
                     <span className="select-none whitespace-nowrap pl-4 pr-1 text-sm font-bold text-muted-foreground/50">
-                      bestyle.com/
+                      4kuts.com/
                     </span>
                     <input
                       type="text"

@@ -37,7 +37,7 @@ export default function WelcomePage() {
         <div className="absolute -top-24 left-1/2 -z-10 h-64 w-64 -translate-x-1/2 rounded-full bg-primary/10 blur-[100px]" />
         
         <h1 className="mb-4 text-5xl font-extrabold tracking-tight text-foreground md:text-7xl">
-          Be<span className="text-primary">Style</span>
+          4<span className="text-primary">KUTS</span>
         </h1>
         
         <p className="mx-auto mb-16 max-w-2xl text-lg text-muted-foreground md:text-xl">
@@ -106,7 +106,7 @@ export default function WelcomePage() {
             <Link href="#" className="hover:text-primary">Privacidad</Link>
             <Link href="#" className="hover:text-primary">Contacto</Link>
           </div>
-          <p>© 2026 BeStyle. Precision & Style.</p>
+          <p>© 2026 4KUTS. Precision & Style.</p>
         </footer>
       </div>
     </main>

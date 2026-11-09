@@ -119,7 +119,7 @@ function LoginContent() {
     <div className="w-full max-w-md">
       <div className="mb-12 text-center">
         <Link href="/" className="mb-8 inline-block text-3xl font-black tracking-tighter text-foreground">
-          Be<span className="text-primary">Style</span>
+          4<span className="text-primary">KUTS</span>
         </Link>
         <h1 className="text-2xl font-bold text-foreground">
           {isLogin ? "Bienvenido de nuevo" : "Crea tu cuenta profesional"}
