@@ -242,15 +242,15 @@ export default function Dashboard() {
               {isOwner ? 'Administrador' : 'Barbero Profesional'}
             </p>
           </div>
-          {/* Botones — scroll horizontal en móvil */}
-          <div className="-mx-4 overflow-x-auto px-4 sm:mx-0 sm:px-0">
-            <div className="flex w-max gap-2 sm:w-auto sm:flex-wrap">
+          {/* Acciones — rejilla en móvil, fila en escritorio */}
+          <nav aria-label="Acciones del panel" className="rounded-2xl border border-border bg-secondary/20 p-2 sm:border-0 sm:bg-transparent sm:p-0">
+            <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
               <button
                 onClick={() => {
                   setManualDate(selectedDate);
                   setIsManualModalOpen(true);
                 }}
-                className="flex shrink-0 items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-xs font-bold text-primary-foreground shadow-lg shadow-primary/10 transition-all hover:scale-[1.02] active:scale-[0.98] sm:px-5 sm:text-sm"
+                className="col-span-2 flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/10 transition-all hover:scale-[1.02] active:scale-[0.98] sm:col-span-1 sm:px-5 sm:py-2.5"
               >
                 <PlusIcon className="h-4 w-4" />
                 Nueva Cita
@@ -259,35 +259,35 @@ export default function Dashboard() {
                 <Link
                   href={`/${barber?.slug}`}
                   target="_blank"
-                  className="flex shrink-0 items-center gap-2 rounded-xl border border-border bg-secondary/50 px-4 py-2.5 text-xs font-bold text-foreground transition-all hover:border-primary/50 hover:bg-secondary sm:px-5 sm:text-sm"
+                  className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-border bg-secondary/50 px-3 py-3 text-xs font-bold text-foreground transition-all hover:border-primary/50 hover:bg-secondary sm:justify-start sm:px-5 sm:py-2.5 sm:text-sm"
                 >
                   <EyeIcon className="h-4 w-4 text-primary" />
-                  Ver como Cliente
+                  <span className="truncate">Ver como Cliente</span>
                 </Link>
               )}
               <Link
                 href="/cliente"
-                className="flex shrink-0 items-center gap-2 rounded-xl border border-border bg-secondary/50 px-4 py-2.5 text-xs font-bold text-foreground transition-all hover:border-primary/50 hover:bg-secondary sm:px-5 sm:text-sm"
+                className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-border bg-secondary/50 px-3 py-3 text-xs font-bold text-foreground transition-all hover:border-primary/50 hover:bg-secondary sm:justify-start sm:px-5 sm:py-2.5 sm:text-sm"
               >
                 <CalendarIcon className="h-4 w-4 text-primary" />
-                Mis Citas (Cliente)
+                <span className="truncate">Mis Citas (Cliente)</span>
               </Link>
               <Link
                 href="/dashboard/perfil"
-                className="flex shrink-0 items-center gap-2 rounded-xl border border-border bg-secondary/50 px-4 py-2.5 text-xs font-bold text-foreground transition-all hover:border-primary/50 hover:bg-secondary sm:px-5 sm:text-sm"
+                className="flex min-w-0 items-center justify-center gap-2 rounded-xl border border-border bg-secondary/50 px-3 py-3 text-xs font-bold text-foreground transition-all hover:border-primary/50 hover:bg-secondary sm:justify-start sm:px-5 sm:py-2.5 sm:text-sm"
               >
                 <ProfileIcon className="h-4 w-4 text-primary" />
-                Editar Perfil
+                <span className="truncate">Editar Perfil</span>
               </Link>
 
               <button
                 onClick={signOut}
-                className="shrink-0 rounded-xl border border-border bg-secondary/50 px-4 py-2.5 text-xs font-bold text-muted-foreground transition-all hover:border-foreground hover:text-foreground sm:px-5 sm:text-sm"
+                className="col-span-2 rounded-xl px-4 py-2.5 text-xs font-bold text-muted-foreground transition-all hover:text-red-400 sm:col-span-1 sm:ml-auto sm:border sm:border-border sm:bg-secondary/50 sm:px-5 sm:text-sm"
               >
                 Cerrar Sesión
               </button>
             </div>
-          </div>
+          </nav>
         </div>
 
         {/* Grid principal — calendario + sidebar */}
@@ -436,8 +436,8 @@ export default function Dashboard() {
                   ))}
                 </select>
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="min-w-0">
                   <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Fecha</label>
                   <input
                     type="date"
@@ -447,7 +447,7 @@ export default function Dashboard() {
                     className="w-full rounded-xl border border-border bg-background px-4 py-2.5 text-sm text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary [color-scheme:dark]"
                   />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <label className="block text-xs font-bold uppercase tracking-wider text-muted-foreground mb-1">Hora</label>
                   <select
                     value={manualTime}

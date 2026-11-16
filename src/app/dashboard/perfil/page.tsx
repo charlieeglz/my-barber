@@ -745,7 +745,7 @@ export default function EditProfilePage() {
                 <div className="rounded-2xl border border-border bg-background/40 p-4 space-y-4">
                   <p className="text-xs font-black uppercase tracking-widest text-muted-foreground text-left">Añadir Periodo de Vacaciones</p>
                   <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 max-w-lg">
-                    <div className="space-y-1.5 text-left">
+                    <div className="min-w-0 space-y-1.5 text-left">
                       <label className="text-xs font-bold text-muted-foreground">Fecha de inicio</label>
                       <input
                         type="date"
@@ -754,7 +754,7 @@ export default function EditProfilePage() {
                         className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm font-bold text-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary [color-scheme:dark]"
                       />
                     </div>
-                    <div className="space-y-1.5 text-left">
+                    <div className="min-w-0 space-y-1.5 text-left">
                       <label className="text-xs font-bold text-muted-foreground">Fecha de fin</label>
                       <input
                         type="date"
