@@ -24,9 +24,24 @@ const getSupabaseAdmin = () => {
 };
 
 export async function POST(request: Request) {
-  const supabaseAdmin = getSupabaseAdmin();
   try {
+    const supabaseAdmin = getSupabaseAdmin();
     const { appointmentId } = await request.json();
+
+    // Cliente con la sesión del usuario: RLS garantiza que solo los
+    // involucrados (cliente, barbero o dueño) puedan cancelar la cita.
+    const token = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
+    if (!token) {
+      return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+    }
+    const supabaseUser = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: { headers: { Authorization: `Bearer ${token}` } },
+        auth: { persistSession: false, autoRefreshToken: false },
+      },
+    );
 
     if (!appointmentId) {
       return NextResponse.json(
@@ -36,7 +51,7 @@ export async function POST(request: Request) {
     }
 
     // 1. Actualizar el estado de la cita a 'cancelled' usando el cliente admin
-    const { data: updatedData, error: updateError } = await supabaseAdmin
+    const { data: updatedData, error: updateError } = await supabaseUser
       .from("appointments")
       .update({ status: "cancelled" })
       .eq("id", appointmentId).select(`
@@ -58,7 +73,7 @@ export async function POST(request: Request) {
 
     if (!updatedData || updatedData.length === 0) {
       return NextResponse.json(
-        { error: "Cita no encontrada o no se pudo actualizar" },
+        { error: "Cita no encontrada o no tienes permiso para cancelarla" },
         { status: 404 },
       );
     }

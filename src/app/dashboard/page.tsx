@@ -1,4 +1,5 @@
 "use client";
+import { cancelAppointment } from "@/lib/services/cancel-appointment";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -134,25 +135,14 @@ export default function Dashboard() {
   const handleCancel = async (apt: Appointment) => {
     setCancelingId(apt.id);
     try {
-      const res = await fetch("/api/appointments/cancel", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ appointmentId: apt.id }),
-      });
-
-      const resData = await res.json();
-      if (!res.ok || resData.error) {
-        throw new Error(resData.error || "No se pudo cancelar");
-      }
+      await cancelAppointment(apt.id);
 
       setAppointments((prev) =>
         prev.map((a) => (a.id === apt.id ? { ...a, status: "cancelled" } : a))
       );
     } catch (error) {
       console.error(error);
-      alert("Error al cancelar la cita");
+      alert(error instanceof Error ? error.message : "Error al cancelar la cita");
     } finally {
       setCancelingId(null);
     }

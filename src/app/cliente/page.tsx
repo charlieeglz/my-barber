@@ -1,4 +1,5 @@
 "use client";
+import { cancelAppointment } from "@/lib/services/cancel-appointment";
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
@@ -8,7 +9,6 @@ import { reviewService } from "@/lib/services/review.service";
 import { dateUtils } from "@/lib/utils/date-utils";
 import { useRouter } from "next/navigation";
 import { ReviewModal } from "@/components/ReviewModal";
-import { RescheduleModal } from "@/components/RescheduleModal";
 import {
   BarberIcon,
   UserIcon,
@@ -28,12 +28,6 @@ export default function ClienteDashboard() {
 
   // Estado del modal de reseña
   const [reviewModal, setReviewModal] = useState<{
-    open: boolean;
-    appointment: Appointment | null;
-  }>({ open: false, appointment: null });
-
-  // Estado del modal de reprogramación
-  const [rescheduleModal, setRescheduleModal] = useState<{
     open: boolean;
     appointment: Appointment | null;
   }>({ open: false, appointment: null });
@@ -74,36 +68,19 @@ export default function ClienteDashboard() {
     if (!confirmCancel) return;
 
     try {
-      const res = await fetch("/api/appointments/cancel", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ appointmentId: id }),
-      });
-
-      const resData = await res.json();
-      if (!res.ok || resData.error) {
-        throw new Error(resData.error || "No se pudo cancelar");
-      }
+      await cancelAppointment(id);
 
       setAppointments((prev) =>
         prev.map((apt) => (apt.id === id ? { ...apt, status: "cancelled" as const } : apt))
       );
     } catch (error) {
       console.error(error);
-      alert("Error al cancelar la cita");
+      alert(error instanceof Error ? error.message : "Error al cancelar la cita");
     }
   }
 
   function handleReviewSuccess(appointmentId: string) {
     setReviewedIds((prev) => new Set([...prev, appointmentId]));
-  }
-
-  function handleRescheduleSuccess(appointmentId: string, newDate: string) {
-    setAppointments((prev) =>
-      prev.map((apt) => (apt.id === appointmentId ? { ...apt, appointment_date: newDate } : apt))
-    );
   }
 
   if (authLoading || loading || !user) {
@@ -255,24 +232,6 @@ export default function ClienteDashboard() {
 
                     {/* Botones de acción — solo en citas pendientes */}
                     {apt.status === "pending" && (
-                      profile?.role === "barber" ? (
-                        <div className="flex gap-2 w-full">
-                          <button
-                            onClick={() => setRescheduleModal({ open: true, appointment: apt })}
-                            className="flex-1 flex items-center justify-center gap-2 rounded-xl border border-primary/30 bg-primary/10 py-3 text-sm font-bold text-primary transition-all hover:bg-primary hover:text-primary-foreground cursor-pointer"
-                          >
-                            <CalendarIcon className="h-4 w-4" />
-                            Reprogramar
-                          </button>
-                          <button
-                            onClick={() => handleCancel(apt.id)}
-                            className="flex-1 flex items-center justify-center gap-2 rounded-xl bg-red-500/10 py-3 text-sm font-bold text-red-400 transition-all hover:bg-red-500 hover:text-white cursor-pointer"
-                          >
-                            <CancelIcon className="h-4 w-4" />
-                            Cancelar
-                          </button>
-                        </div>
-                      ) : (
                         <button
                           onClick={() => handleCancel(apt.id)}
                           className="flex w-full items-center justify-center gap-2 rounded-xl bg-red-500/10 py-3 text-sm font-bold text-red-400 transition-all hover:bg-red-500 hover:text-white cursor-pointer"
@@ -280,7 +239,6 @@ export default function ClienteDashboard() {
                           <CancelIcon className="h-4 w-4" />
                           Cancelar Cita
                         </button>
-                      )
                     )}
                   </div>
                 </div>
@@ -302,16 +260,6 @@ export default function ClienteDashboard() {
           staffName={reviewModal.appointment.staff?.name}
           barbershopName={reviewModal.appointment.barbershops?.full_name}
           clientId={user.id}
-        />
-      )}
-
-      {/* Modal de reprogramación */}
-      {rescheduleModal.appointment && (
-        <RescheduleModal
-          isOpen={rescheduleModal.open}
-          onClose={() => setRescheduleModal({ open: false, appointment: null })}
-          onSuccess={handleRescheduleSuccess}
-          appointment={rescheduleModal.appointment}
         />
       )}
     </main>
